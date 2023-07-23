@@ -1,0 +1,230 @@
+.. _styles:
+
+Styles and Themes
+-----------------
+
+My understanding is that the motivation and attraction of ttk is that
+one may compose a GUI and it will look "normal" when run in any of the
+common OS's - Linux, UNIX, Windows, or OS X.
+Also, it is possible to create new themes which are more pleasing for
+a more modern appearance of a GUI. However, I think ttk is a mess in
+terms of architecture, implementation, and especially documentation.
+However, there are several much needed widgets available in ttk including
+ttk::notebook, ttk::progressbar, ttk::treeview, ttk::panedwindow,
+ttk::separator, and ttk::sizegrip. PAGE supports those ttk widgets as well
+as a few others. To get a better appreciation of some of the
+difficulties in working with styles and themes, see
+https://tkdocs.com/tutorial/styles.html#whydifficult. 
+
+So what I have tried to do is manipulate the Themes and Styles in a
+way that the PAGE user can mix ttk widgets with tk widgets and have a
+consistent appearance. This is very much a case of evolving
+understanding and appreciation. This usage of Themes and styles is
+different from orthodox usage which would replace tk widgets with ttk
+widgets but it seems to work pretty well as shown by :ref:`widgetdemo`.
+
+This is an area that remains confusing to me.  If one is interested
+using a GUI color scheme different for the default gray for Linux and
+MS, then one has to confront Styles.  I was unable to make much
+progress until I received a great deal of help from Guilherme Polo
+which got me to the point I am at now.  I am not sure that I have
+found the best approach or even a
+particularly good way of achieving my results.  So I have tried to
+make style commands as clear as possible so that the user can
+understand what I have done.  If a user
+knows a better way of doing this please let me know and I shall try to
+incorporate it in a future release. Also, Maksim Korzh was
+instrumental in providing the Style coding for the PNotebook widget.
+
+
+First I would like to automatically generate code for the user which
+would follow his color scheme.
+Consider the following code for a GUI window that contains a tabbed
+notebook with a background color of wheat:
+
+.. sourcecode:: python
+
+    def __init__(self, master=None):
+        _bgcolor = 'wheat'  # X11 color: #f5deb3
+        _fgcolor = '#000000'  # X11 color: 'black'
+        _compcolor = '#b2c9f4' # Closest X11 color: 'SlateGray2'
+        _ana1color = '#eaf4b2' # Closest X11 color: '{pale goldenrod}'
+        _ana2color = 'beige' # X11 color: #f5f5dc
+        _tabfg1 = 'black'
+        _tabfg2 = 'black'
+        _tabbg1 = 'grey75'
+        _tabbg2 = 'grey89'
+        _bgmode = 'light'
+        font10 = "-family {DejaVu Sans} -size 14 -weight normal -slant roman -underline 0 -overstrike 0"
+        self.style = ttk.Style()
+        if sys.platform == "win32":
+            self.style.theme_use('winnative')
+        self.style.configure('.',background=_bgcolor)
+        self.style.configure('.',foreground=_fgcolor)
+        self.style.configure('.',font=font10)
+        self.style.map('.',background=
+            [('selected', _compcolor), ('active',_ana2color)])
+        master.configure(background=_bgcolor)
+
+
+        self.style.configure('TNotebook.Tab',background=_bgcolor)
+        self.style.configure('TNotebook.Tab',foreground=_fgcolor)
+        self.style.map('TNotebook.Tab',background=
+            [('selected', _compcolor), ('active',_ana2color)])
+        self.TNotebook1 = ttk.Notebook(master)
+        self.TNotebook1.place(relx=0.28,rely=0.16,relheight=0.51,relwidth=0.5)
+        self.TNotebook1.configure(width=300)
+        self.TNotebook1.configure(takefocus="")
+        self.TNotebook1_pg0 = ttk.Frame(self.TNotebook1)
+        self.TNotebook1.add(self.TNotebook1_pg0, padding=3)
+        self.TNotebook1.tab(0, text="Page 1",underline="-1",)
+        self.TNotebook1_pg1 = ttk.Frame(self.TNotebook1)
+        self.TNotebook1.add(self.TNotebook1_pg1, padding=3)
+        self.TNotebook1.tab(1, text="Page 2",underline="-1",)
+
+
+The first group of statements in __init__define define the default GUI
+colors and the default GUI fonts. These setting come directly from the
+user's preference choices. I added the comments to the color
+statements so that the user would have a little clearer picture was to
+what was going on.  Similarly, there are several different ways to
+specify fonts and I think that the string format that I used may be
+the clearest for the user to understand and modify.  The complementary
+color and the two analog colors were calculated from algorithms found
+on the net.  I have included as comments the names of the closest or
+exact X11 color. Also, if the color is specified by the X11 name a
+comment contains the hex value.
+
+.. sourcecode:: python
+
+        _bgcolor = 'wheat' # RGV value #f5deb3
+        _fgcolor = '#000000' # Closest X11 color: 'black'
+        _compcolor = '#b2c9f4' # Closest X11 color: 'SlateGray2'
+        _ana1color = '#eaf4b2' # Closest X11 color: '{pale goldenrod}'
+        _ana2color = '#f4bcb2' # Closest X11 color: 'RosyBrown2'
+        font10 = "-family {DejaVu Sans} -size 14 -weight normal -slant roman -underline 0 -overstrike 0"
+
+
+The next group of statements obtain the ttk
+style in use and set the background and foreground color defaults for
+ttk as well as colors for highlight and active colors.
+
+
+.. sourcecode:: python
+
+        self.style = ttk.Style()
+        if sys.platform == "win32":
+            self.style.theme_use('winnative')
+        self.style.configure('.',background=_bgcolor)
+        self.style.configure('.',foreground=_fgcolor)
+        self.style.configure('.',font=font10)
+        self.style.map('.',background=
+            [('selected', _compcolor), ('active',_ana2color)])
+
+
+
+
+This will handle most of the color setting for ttk but not all of
+them.  I expected that all the style configuration in ttk would be
+inherited from the '.' object; that seems not to be the case. Notice
+that the second and third lines of code above cause the "winnative"
+theme to be used when the code is run under Windows.
+
+The following fixes the background color of the Toplevel window. 
+
+.. sourcecode:: python
+
+        top.configure(background=_bgcolor)
+        top.configure(highlightbackground="wheat")
+        top.configure(highlightcolor="black")
+
+Since the tabbed notebook is in use, we encounter one of the ttk
+"exceptions" - colors for notebook tabs.  Hence, the following code:
+
+
+.. sourcecode:: python
+
+           _compcolor = '#b2c9f4' # Closest X11 color: 'SlateGray2'
+           _ana1color = '#eaf4b2' # Closest X11 color: '{pale goldenrod}' 
+           _ana2color = '#f4bcb2' # Closest X11 color: 'RosyBrown2' 
+
+I came across some code which purports to calculate the complement and
+analogs of a color and used that to calculate the above colors.  I also
+used similar code to translate the RGB coding to the name of the
+closest X11 color so that the user can get some idea of the color and
+easily change them if desired.
+
+.. Next comes one of the special cases, note book tabs.  Here I have
+.. specified background and foreground colors for the tabs since they are
+.. not inherited from the "." ttk object.
+
+.. .. sourcecode:: python
+
+..           self.style.configure('TNotebook.Tab',background=_bgcolor)
+..           self.style.configure('TNotebook.Tab',foreground=_fgcolor)
+
+and finally I make the color of the selected tab the complement of the
+background color as defined above, and the color of the tab under the
+mouse one of the analog colors from above.  This is sort of automating
+the theme color selection and I really don't want to do that.  It just
+seemed necessary to compete the task.  I hope the user is able to
+derive from the example, the changes he wishes to make.
+
+.. sourcecode:: python
+
+           self.style.map('TNotebook.Tab',background=
+               [('selected', _compcolor), ('active',_ana2color)])
+
+The above shows the code I added to make the notebook widget look
+consistent. Similar tricks can be seen for treeview widgets,
+scrollbars, labeled frames, etc.  Again, if you see better or clearer
+ways of handling style components please let me know.
+
+
+I did all of my development work on Linux.  As an illustration of the
+same PAGE-generated GUI running under different systems, let me
+present the following screens shots of vrex.py (vrex is one of the
+examples discussed later in the examples section):
+
+.. image:: vrex-linux.png
+
+Above: Running vrex running on Linux.  This is what I built using PAGE
+on Linux..
+
+
+
+.. image:: vrex-windows10.png
+
+
+Above: Running vrex running on Windows 10 using the "winnative"
+theme. This looks pretty good except for the background color in the
+menubar and the sizegrep. 
+
+.. image:: vrex-osx.jpg
+
+Above: Running vrex running on OS X.
+
+
+As one can see there are differences in appearance but on the whole it
+seems to work reasonable well for this example.  That is fortunate
+because the main feature of the example is the use of paned windows
+and scrolled text widgets and they are certainly important for GUI
+building. 
+
+
+I concluded that it would be better if I generated code which forces
+the "winnative" theme when the generated GUI is run on Windows.  It
+seems preferable to me to have the sizegrip with an incorrect
+background but a better rendering of the notebook widget than the
+other way around.  Any comments, help, or suggestions will be very
+welcome.
+
+From the above and similar experiences, for my own use, I avoid ttk
+widgets which are also implemented as tk widgets such as buttons,
+labels, frames, checkboxs, and radiobuttons,  but use
+notebook, paned window, progress bar, and treeview, because of their
+convenience. I intend to keep looking at the ttk problems and if I can
+learn how to avoid them I will certainly do so.
+
+
+

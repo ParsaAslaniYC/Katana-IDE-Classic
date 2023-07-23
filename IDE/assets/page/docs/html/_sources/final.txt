@@ -1,0 +1,154 @@
+								   
+Epilogue
+========
+
+
+
+Final Recommendations
+---------------------
+
+My final recommendation are
+
+   * Save often.
+
+   * Spring for Grayson's book.
+
+   * Save often.
+
+   * Please report problems.
+
+
+
+Acknowledgments
+----------------
+
+First thanks to HP for assigning the rights of PAGE to me which allows
+me to make this available to the Python community.
+
+Again, let me acknowledge that PAGE is built on top of Visual Tcl.
+Without that work I would not have known how to get started.
+
+George Tellalov introduced me to relative placement and made numerous
+helpful suggestions.
+
+Guilherme Polo did a marvelous job implementing and documenting Pyttk.
+He helped me understand several of the new ttk widgets and showed how
+to easily build scrolled versions of them.  His documentation
+convinced me to use Sphinx for the PAGE documentation.
+
+I would like to thank Greg Walters especially for writing a series of
+articles on Python programming that include two on PAGE and for his
+encouraging me to get the Alias feature working correctly. (See
+below for references and URL's.)  I borrowed from his article the code
+for busy cursors included as a sample above. This year, 2018, he wrote
+a tutorial for learning PAGE which is included in the documentation
+directory, "/page/docs/tutorial". He has also been a continuous font
+of good ideas.
+
+I would like to acknowledge the work of Kent Fox in aiding testing of
+PAGE on three systems and bringing to light several bugs.
+
+I borrowed the ColorDlg.tcl color picker from  `Le site de Jack
+<http://http://jack.r.free.fr/index.php?lng=en&page=colordlg>`_. I
+found it very satisfactory and give my thanks.
+
+Also borrowed was ColorExplorer written by William J. Poser.
+
+Alexander Walters suggested the code for importing the tkinter and ttk
+modules adopted in PAGE 4.1.
+
+Sam Manzi made numerous helpful suggestions and helped test recent
+versions of PAGE.
+
+Many people have reported bugs and made suggestions. Piero Ronchi and
+Paul Kreiger have been especially helpful. In addition, Paul Kreiger
+donated a set of PAGE icons and a canvas example.
+ 
+
+Bob Stanton suggested displaying both the GUI module and the Support
+module in separate Python Consoles and also firing up an IDE with the
+two modules. Both were excellent ideas and so implemented.
+
+Maksim Korzh was the inspiration and implementer of the main feature
+of version 4.10 - the inclusion of the PNotebook feature which is the
+notebook widget with builtin tab closing. I find the Ttk style
+mystifying and undocumented; I would never have figured it out.
+
+Steffen Illhardt helped me to better understand encoding issues
+involved when transferring files between different countries and
+operating systems and he also provided the code changes to PAGE which
+reduces the problem.
+
+Documentation
+-------------
+
+One problem that many people must encounter when trying to use Tkinter
+with python is locating adequate documentation.  I relied heavily on
+Grayson's book particularly to see how to map the various tcl calls
+and configuration options into python calls and for descriptions of
+the available functions.  I would have gotten nowhere without this
+reference.  Unfortunately, Grayson predated the ttk widget set by
+several years.
+
+Another extremely helpful reference is: `An Introduction to Tkinter by
+Fredrik Lundh
+<http://www.pythonware.com/library/tkinter/introduction/index.htm>`_.
+
+Several years ago, Greg Walters published several great articles on
+using PAGE. They are now somewhat out of date but he has written a really good
+Tutorial which can be found in the "page/docs/tutorial" subdirectory
+along with his sample code. His long series of articles on Python
+programming are available via his new web site
+`TheDesignatedGeek <http://thedesignatedgeek.xyz/>`_.
+
+I have also found `Tkinter 8.5 reference: a GUI for Python
+<http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/index.html>`_ by
+John W. Shipman from New Mexico Tech helpful on many occasions.
+
+See also http://effbot.org which contains hundreds of articles on
+Python and related technologies (including PIL, ElementTree, Tkinter,
+and other extensions). I have used this reference repeatedly.
+
+For Tcl/Tk documentation visit: `Tcl Developer Site
+<http://tcl.activestate.com>`_.
+
+A very useful Tk tutorial with information about ttk widgets and styles
+is `TkDocs <http://www.tkdocs.com/tutorial/index.html>`_.
+ 
+Since some people find Python Lambda usage confusing, Grant Hilebrand
+suggested including a reference to the excellent tutorial at
+https://pythonconquerstheuniverse.wordpress.com/2011/08/29/lambda_tutorial/. 
+
+Unfortunately, there is no useful documentation for Visual Tcl like so
+many Open Source projects.
+
+I have recently turned on a discussion forum on the SourceForge
+summary page `General Discussion
+<https://sourceforge.net/p/page/discussion/?source=navbar>`_.
+
+For information on sharing variables and functions between Python
+modules see is how to share global variables across module. A
+good reference is `How do I share global variables across modules?
+<http://effbot.org/pyfaq/how-do-i-share-global-variables-across-modules.htm>`_.
+
+Reporting Problems
+~~~~~~~~~~~~~~~~~~
+
+I really welcome the reporting of problems; that is the only way I can
+catch many of them. When reporting problems to "Don dot Rozenberg at
+gmail dot com" please include the following:
+
+* The version number of PAGE.
+
+* The OS you are using.
+
+* When PAGE dies it often shows an Error window which has a Trace back
+  Button, which if selected produces a separate window containing a
+  trace back of PAGE indicating the offending or offended code. Please
+  if possible, send me a screen capture of that window.  
+
+* If possible the tcl file that caused the error. Even better would be
+  a simple case causing the same error.
+
+If your subject contains the word PAGE, my email reader will place the
+message in a separate folder where I will see it sooner.  

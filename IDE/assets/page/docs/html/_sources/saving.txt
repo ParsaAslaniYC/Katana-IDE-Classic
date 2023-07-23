@@ -1,0 +1,51 @@
+.. _saving:
+
+Creating and Saving Code Modules
+================================
+
+This section discusses the creation and saving of the GUI module and
+the support module. I want to make saving simple and intuitive while
+reducing the probability of inadvertently overwriting hard to
+reproduce code, particularly in the support module.  At the same time
+I did not want to bombard the user with "Are you sure ..."
+dialogues. These goals are somewhat contradictory. I would appreciate
+comments on this subject.
+
+Here is what I have tried to implement:
+
+GUI Module
+~~~~~~~~~~
+
+
+When one chooses to generate the GUI module (Control-P):
+
++ The constructed GUI is transformed into a Tcl file and saved if the GUI has changed in the current session.  
+
++ The GUI is also transformed into a Python module called the GUI module and displayed in the :ref:`Python Console` but is not automatically saved. This is to allow the user to peruse the code before committing it to storage.  The user may even change the code since the Python Console code window is a Tk text widget which rudimentary editing capability.
+
++ From the Python Console, the user can  select the Save button and the GUI module will be saved if "new" or changed.  Repeatedly selecting the Save button without changing the code will not result in additional actual saves.
+
++ From the Python Console, the user can select the Run button which provides the same function as the Save button but also attempts to execute the GUI module, if there is an existing support module.
+
+Support Module
+~~~~~~~~~~~~~~
+
+When one chooses to generate the Support module (Control-U):
+
++ The constructed GUI is transformed into a Tcl file and saved if the GUI has changed in the current session.
+
++ If there is no existing support module, then one is generated and displayed in the Python Console.
+
++ If there is an existing support module, action is a bit more elaborate. First, the existing support module is analyzed to see what Tkinter variable and functions are defined in the existing module and compared with those which would be defined in a new support module. Next, the user is given the choice 
+
+        + use the existing support module, thereby preserving your hand written code, 
+
+        + generate a new support module, 
+
+        + update the existing support module updated to include the additional Tkinter variable and skeleton functions.
+
+
++ From the Python Console, the user can select the Save button and the
+  GUI module will be saved if “new” or "changed". 
+
++ From the Python Console, the user can select the Run button which provides the same function as the Save button but also attempts to execute the GUI module.

@@ -1,0 +1,4 @@
+  File "E:/Projects/Katana-IDE-main/IDE/assets/page/#hotbird_server.py", line 17
+    import #hotbird_server_support
+                                 ^
+SyntaxError: invalid syntax

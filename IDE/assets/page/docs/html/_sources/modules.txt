@@ -1,0 +1,221 @@
+								   
+Module Structure
+================
+
+PAGE generates two modules, The GUI module, and the Support
+Module. The first contains all of the Python code necessary to plop
+the GUI window onto the computer screen. In my vision of the PAGE
+world, the GUI module is not to be edited. It contains all of the
+required linkage to the Support module.  It is generally the main
+module of the application.
+
+The Support module is generated in skeletal form and is the framework
+upon which the application is built. It is where the user written code
+resides.  As such it is infrequently generated or replaced by PAGE. In
+fact, the separation is the secret of rework; it allows changes
+to the content and appearance of the GUI window while preserving the 
+user's code. 
+
+When the modules are generated they are displayed in the Python
+Console but not saved automatically. This gives the user an
+opportunity to inspect the code and decide whether to save. When PAGE
+generates a module, it uses four spaces for indentation. When PAGE
+saves a module, spaces are saved as spaces.
+
+Project Directory
+~~~~~~~~~~~~~~~~~
+
+The directory containing the various files associated with PAGE is
+called the project directory. It contains the project file, the
+generate Python modules, any image files used with widgets, and any
+application support modules.
+
+Let me call the project directory "proj_dir", because it is precise
+and corresponds to an internal PAGE variable. proj_dir is set several
+ways:
+
++ If PAGE is executed without an arguments, proj_dir is set to the
+  current working directory.
+
++ If PAGE is called with an argument, proj_dir is set to the current
+  working directory joined to the directory portion of the argument.
+
++ If the GUI design created with PAGE is saved, the destination
+  directory becomes the proj_dir.
+
++ If a project file is opened, the source directory becomes the
+  proj_dir.
+
+This is important when widgets have image attributes. To keep such
+cases reasonable sane, PAGE requires that all image files associated
+with such widgets reside within the proj_dir or a subdirectory of it
+prior to the specification of the widget.
+
+I recommend that before executing PAGE, a directory be created and
+that directory be made the current working directory. Image files need
+not be included before beginning the GUI development, but need to
+included before widgets specify non-blank image attributes. Again, you
+can add a widget that might include an image but the image file must
+be included before specified the image attribute.
+
+GUI Module
+~~~~~~~~~~
+
+The main feature of the GUI module is the class definition, which
+defines a GUI window.  It defines the top level window and all of the
+contained widgets.  Note that it refers to all callback functions as
+functions in the support module and that Tk variables such as
+textvariables are referred to Tk variables in the support module.
+
+The GUI module contains two stylized function for instantiating the
+window class. The first is:
+
+.. sourcecode:: python
+
+    def vp_start_gui():
+   	    '''Starting point when module is the main routine.'''
+    	global val, w, root
+    	root = Tk()
+    	top = New_Toplevel_1 (root)
+    	fnew_support.init(root, top)
+    	root.mainloop()
+
+which is the entry point when starting the routine as the main routine
+of the application as seen at the bottom of the module:
+
+.. sourcecode:: python
+ 
+    if __name__ == '__main__':
+       vp_start_gui()
+	   
+
+The main thing about the function vp_start_gui  is that it initializes
+Tk and establishes the Tkinter mainloop.   Note that the init function in
+the support module is passed  pointer to the GUI window class.
+
+
+The other function is:
+
+
+.. sourcecode:: python
+
+    def create_New_Toplevel_1(root, *args, **kwargs):
+        '''Starting point when module is imported by another
+        program.'''
+        global w, w_win, rt
+    	rt = root
+    	w = Toplevel (root)
+    	top = New_Toplevel_1 (w)
+    	fnew_support.init(w, top, *args, **kwargs)
+    	return (w, top)
+
+which is the entry point when ate GUI window is invoked from code
+within the running application, for instance, if a secondary GUI such as
+a progress bar is desired for some action triggered in the main
+GUI. Notice that it does not call Tk() nor start a mainloop; you only
+want one of those.  A big point is that the init function is passed a
+variable argument list in the name of flexibility.  It is also passed
+a pointer to the GUI window. This is done so that the user can close 
+the created window in its support module without closing affecting
+other windows in the application.
+
+Support Module
+~~~~~~~~~~~~~~
+
+This module is home of the hand coded portion of the application.
+Obviously, PAGE can only prepare a framework for the application. What
+PAGE knows about are, (1) the linkage between the GUI module and the
+support module, (2) the callback functions to be located in the
+Support module, and (3) the Tk variables which are to be manipulated
+in the support module.
+
+For linkage between the modules is mainly the init function.
+
+.. sourcecode:: python
+
+    def init(top, gui, *args, **kwargs):
+        global w, top_level, root
+        w = gui
+        top_level = top
+        root = top
+
+Here PAGE merely generates the bare minimum. It sets global variables
+which refer to the root of the GUI window and w which points to the
+GUI window created by the corresponding GUI module.  The latter allows
+the user to change configuration of the GUI window and of widget
+contained in the window. For instance if there is a button (Button1)
+in the GUI window, the color may be changed anywhere in the support
+module simply with the following code:
+
+
+.. sourcecode:: python
+
+   w.Button1.configure(color='red')
+
+Also, if there is hierarchy of modules or routines flowing from the
+support module, then the reference to the GUI window can be passed
+along and manipulated.
+
+The generated code for the callback functions is even simpler:
+
+ 
+.. sourcecode:: python
+
+    def callback():
+    	print('unknown_support.callback')
+    	sys.stdout.flush()
+
+
+
+Code generated for the Tk variable kkkk looks like:
+
+
+.. sourcecode:: python
+
+    def set_Tk_var():
+       # These are Tk variables used passed to Tkinter and must be
+       # defined before the widgets using them are created.
+       global kkkk
+       kkkk = StringVar()
+
+
+The code generated as above is so generated so that the GUI module and
+the support module will be an executable pair.  That is, you can
+execute the GUI module and see what it will look like even though you
+have put in no additional application code. If the GUI invokes a
+callback, say by a button select, the program will tell you that it
+was invoked. Now you have a leg up, go program.
+
+
+What if after you have written a substantial body of application code,
+and discover that you need an additional widget in the GUI module;
+what to do?
+
+First invoke PAGE with the project name, add the widget with all its
+configuration including callbacks and Tk variables. Then generate
+Python code for the GUI module just like before.  You sure do not want
+to rebuild the support module anew and erase all of your hand code.
+So when you tell PAGE to generate your support module, it gives you
+the option of updating the existing support module. If selected, PAGE
+will merely add skeletons for the new callbacks and add the new Tk
+variables.  In addition, it will backup the previous version of the
+modules in case of failure or PAGE bugs. etc..  PAGE will keep backups
+to a depth specified in the preferences.  See :ref:`backup preferences <backup>`.
+
+As a convenience, the following code is added at the bottom of the
+support module to aid in debugging.  I you are debugging the support
+module and want to test its execution, you can just execute it and it
+will not start by invoking a functions within the support module but
+rather the main function in the GUI module.  I found it particularly
+useful since I do my development in emacs where I have a key binding
+which will invoke python to execute the current buffer.
+
+.. sourcecode:: python
+
+	 if __name__ == '__main__':
+     	 import bind_example
+    	 bind_example.vp_start_gui()
+
+
+Some of these features are further explored in :ref:`Applications with Multiple Top-Level Windows`.
+

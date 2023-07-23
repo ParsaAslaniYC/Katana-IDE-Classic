@@ -1,0 +1,6 @@
+multitasking
+chlorophyll
+keyboard
+wmi
+PyQt6
+pygments

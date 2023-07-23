@@ -1,0 +1,656 @@
+								   
+Examples
+=========================
+
+Examples are the main way that I learned about Tkinter and how to
+write code for building GUI's .  Unfortunately, it is hard to find
+examples.  Grayson's book has been an immense help over the years and
+more recently the pyttk-samples distributed by Guilherme Polo have
+helped greatly.  The official Tcl documentation is pretty much limited
+to man pages which are of minor assistance in getting started with
+Tkinter. The `tutorial on the Tcl Developers site
+<http://www.tkdocs.com/tutorial/index.html>`_ only recently included
+Python code. Much experimentation was required before I was able to
+see a paned window on my screen or a scrolled directory.  There are
+several interesting examples in the examples subdirectory.
+
+So one may experiment with the examples changing sizes, colors, fonts,
+etc. in the GUI modules and they should still work if he does not
+regenerate support modules.  At least, one can see some of the
+possibilities.  Of course, I have created some of them like menus in
+poor taste just to illustrate some of the possibilities. You may
+encounter some difficulties which may be due to the absence or miss
+match of fonts, etc. between my system and yours.
+
+The easiest way to try the examples is to go to one page/examples
+subdirectories and (1) run page against the a '.tcl' file in
+that directory and (2) execute the generated GUI module.  Most of the
+examples have only one '.tcl'. Several examples have two GUI's and
+usually has a 'main.tcl'; vrex the main GUI is 'vrex.tcl' and in 'two'
+the main GUI module definition is 'w1.tcl'.
+
+If you try saving  the examples by executing PAGE on the Tcl files be
+aware that generating and saving support files will replace the
+included support files which will become backup versions and the
+functioning of the applications will be lost unless the respective
+files are restored.
+
+Due to the impending demise of Python 2.7, I am no longer supporting
+the examples in the example directory and I have moved the Python 2
+examples to the "examples-py2" subdirectory. Python 3 examples are in the
+examples subdirectory of the installation directory.
+
+Directory Browser
+-----------------
+
+This example contains a scrolled treeview widget that displays ones
+UNIX directory tree.  The source for this example is in
+examples/directory-tree.py It is a rework of Polo's example to include
+folder icons which open and close.  Polo's example is Based on
+`bitwalk's directory browser
+<http://bitwalk.blogspot.com/2008/01/ttktreeview.html>`_.
+
+
+
+.. image::  dir-tree.png
+
+.. _vrex:
+
+Vrex
+----
+
+
+In the past I have used a number of regular expressions in Python and
+used to great advantage `Visual Regexp
+<http://laurent.riesterer.free.fr/regexp/>`__ in composing and testing
+those regular expressions and thought that rewriting the program in
+Python would be interesting because
+
+* It would illustrate important capabilities of PAGE.
+
+* It would be a useful program in its own right. Indeed, I use it all
+  the time.
+
+* The original version was written in Tcl/Tk and so uses the regular
+  expression processing of Tcl which is bound to be slightly different
+  from that in Python. So an all Python version using the Python
+  regular expression processing would be true to Python.
+
+* The original program had ZERO documentation. I never could figure
+  out all of the facilities present. (The most recent version has one
+  page of documentation.) I wanted a version that I could document.
+
+* Vrex uses two Toplevel Widgets; the main GUI shown below and a
+  separate window for the help facility.
+
+* This example illustrates several points about PAGE support: Building
+  menus, using paned windows, text colorization, synchronization
+  between two scrolled text windows.
+
+.. image::  Vrex_for_Python.png
+
+The main portion of the GUI is a three pane window for entering the
+regular expression and sample in the first two and the third pane
+presents match results based on the selection of buttons at the
+bottom.
+
+Some of the features of PAGE illustrated in this useful program are:
+
+* Scrolled text widgets nested inside of label frames.
+
+* Use of two separate GUI's, one for the main function of the program
+  and one for a help window.
+
+* Colorizing the text within the scrolled text windows.
+
+Vrex Operation
+``````````````
+
+Briefly, Vrex works as follows:
+
+
+One enters the regular expression under test into the top text box,
+and the sample which is the subject of the regular expression match
+into the middle text box.  One may use the File menu to load files
+into the text boxes, one may directly type entries or use the normal
+cut and paste facilities of the operating system.  The user can also
+save the regular expression and sample using the File menu.
+
+* Pressing the Go button causes the match to be attempted.  Also,
+  colorization is applied to both the regular expression and to the
+  sample. The regular expression is colorized to show the portions of
+  the regular expression are to extracted individually. And if the
+  match is successful the corresponding portions of the sample are
+  displayed in the same colors.
+
+* By selecting one of the row of buttons marked match, 1, 2, ..., 9,
+  the portions of the sample corresponding to extracted subpatterns are
+  displayed in the match window.
+
+* You can use the File menu to load to save both the regular expression
+  and the sample.
+
+* The Quit Button terminates the program.
+
+* The File menu also has a Quit entry that terminates the program.
+
+* The Help menu opens a second GUI containing a ScrolledText widget
+  which has help information.
+
+
+The regular expression should be colorized showing the portions to be
+extracted in different colors and as well as the matching portion of
+the sample.
+
+If you then Select Match, that matching portion of the sample will be
+shown in the Match text box. Select 1, and the portion matching the
+sub expression will be shown, etc.. 
+
+You can also load a file into the sample window and thus run the
+regular expression against many strings.
+
+.. _progress:
+
+Progress Bar
+------------
+
+This example shows the usage of the progress bar widget but is included
+mainly for illustrating an application with two toplevel windows.  It
+shows how the main window is able to interact with variables and
+procedures in the imported module which actually displays the progress
+bar.
+
+Important features illustrated include the creation and destruction of
+the secondary top level window and the fact that the main GUI support
+code requires access to Tkinter variables defined and manipulated in
+the support module of the other, progress bar, window.
+
+Complex
+-------
+
+This really isn't much of an example doing nothing but does showing
+nesting of a paned window inside of a paned window and a notebook
+widget nested inside of a paned window. By the way, one can enlarge
+the top level window and copy and paste the whole paned window to a
+new location.
+
+Menus
+-----
+
+There are two directories page/examples/menu and page/examples/popup
+which demonstrate menus.
+
+The menu directory contains a fairly extreme menu bar example.  Note, I do not
+advocate this as a style to be used; it merely suggests some of the
+things that can be done.  
+
+While this example works as expected on my Linux Mint 13 machine, it
+does not work as well on my XP machine. The way it was conceived,
+there is a small image to the right of the label in the left of the
+menu bar. However, on XP neither the label nor the image is shown.
+What one gets is "(image)".  Strange since if you go down several levels
+there is an image to the left of one of the check buttons. I think
+that is a problem with Tk.
+
+.. _popup:
+
+The popup directory contains a primary example, 'popup' which merely
+activates a popup menu which then activates callback functions passing
+no arguments to the callback functions.  The example have a top
+level window with two buttons and a different context menu attached to
+each.  To see the popup menus right click on the buttons.  You will
+note that the two menus have different colors.
+
+Another example is 'positional' which augments the popup example with an
+additional command and an additional callback routine and passes that
+callback function the parameter 1 via the variable parameter list
+using the only positional parameter.  Finally, the 'keyword' example, does
+a similar thing passing the parameter 1 by means of a keyword parameter.
+
+
+standard.tcl
+------------
+
+This is just a top level window with each of the standard Tk widgets
+that I support.  It just shows that I can generate working Python code
+for each.   The lowercase 's' emphasizes that it doesn't do much.
+
+themed.tcl
+----------
+
+As above for the themed widgets.
+
+Canvas
+------
+
+Paul Krieger donated a canvas example which can be found in the
+<page_dir>/examples/canvas directory. I am very thankful since I have
+no facility with the canvas widget.
+
+.. image:: p-canvas.png
+
+.. .. _wcpe:
+.. 
+.. WCPE
+.. ----
+.. 
+.. See the WCPE directory in the examples directory.  This is a program
+.. that displays the program of WCPE which is one of my favorite
+.. classical music stations.  In this example all of the functional code
+.. is located in WCPE_support.py and the GUI is defined in WCPE.py which
+.. is the main module.  I found it very tricky to deal with time zones
+.. and did not want to loose any of that code and have to redo it or to
+.. deal with diff's; at the same time, I was constantly tweaking the
+.. GUI.  I generated the import module once and proceeded fill out the
+.. "init" function and the callback functions in WCPE_support.py while
+.. tweaking the GUI, i.e., changing its location, color, the size of the
+.. display fields, and change of some display fields from entry boxes to
+.. labels.
+.. 
+.. This example requires the Python time zone package pytz which is
+.. available from `Python Package Index <http://pypi.python.org/pypi/pytz/>`_.
+.. 
+.. .. image:: WCPE.png
+.. 
+.. This example utilizes: 
+.. 
+.. * Labels linked to Tkinter variables to display information like times,
+..   composer, artist, etc.
+.. 
+.. * A Scrolled text box which displays the whole play schedule for the
+..   day and colorizes the current piece and makes sure it is displayed
+..   within the window.
+.. 
+.. * Busy cursor to alert the user that the application is awaiting
+..   playlist information from the web.
+.. 
+.. In addition I fuss around with reading and parsing web pages and time
+.. zone calculations.
+.. 
+
+.. _double:
+
+Clone
+-----
+
+This is a somewhat kooky example located in examples/clone, where
+main.py creates a GUI which presents a button "Make Two" which cause
+the creation of two instances of the "called" GUI but with differing
+characteristics of location and background colors.  The called GUI is
+then able to create incidences of clones with different locations and
+background colors.
+
+It is also an example of passing a user parameter to the creation
+module which is then passed to the "init" function in the support
+module where the color and location are manipulated.
+
+There may be a problem executing this example on Windows if fonts
+selected in the tcl are not available on the Windows machine. In that
+case the font will default to TkDefaultFont.  Courier New is available
+on both my Linux system and my XP box.
+
+This example show two way of defining the textvaribles associated with
+the label widgets in the called GUI.  One way is to define
+(automatically) as a Tkinter variable in the support module. The second is
+to define, again automatically, as a variable in the GUI module by
+defining it as "self.<variable>" in the attribute editor.  PAGE
+supports both, but I now see no advantage to using the second way, and
+I think it is a bit more confusing.
+
+Calendar
+--------
+
+Small example of building a calendar display using the new rework
+scheme. It is located in examples/calendar subfolder. 
+
+
+
+.. image::  calendar.png
+
+CPU Info
+--------
+
+Another small example which displays the output of lscpu on a Linux
+system. This does not execute properly on Windows machine because it
+utilizes a Linux command.
+
+.. image::  cpu-info.png
+
+.. _bind_example:
+
+Bind
+----
+
+This subdirectory contains a bind example where the button 
+responds to selection with <Button-1> via the command attribute 
+set in the Attribute Editor and to <Button-2> and <Button-3> via 
+bind commands created using the Binding Window. 
+
+The function named in the command attribute is different from that
+in the bind statement because in the latter case an event object is
+passed as a parameter to the event handler so the handler must have an
+argument to accommodate the event object.
+
+
+.. _custom_example:
+
+Custom Widgets
+--------------
+
+ScrolledFrame
+`````````````
+
+This example, in <page-dir>/examples-3/custom/canvas, shows how I used a custom
+widget called ScrolledFrame which I borrowed from the web. This widget
+is used to display 100 buttons on a scrolled canvas.
+
+When the user open PAGE with canvas.tcl, he sees
+
+.. image::  canvas-tcl.png
+
+which shows the toplevel window filled with a custom widget. Since the
+structure of the widget is unknown to PAGE, it cannot be shown or
+manipulated other than sizing or placement.
+
+When the support module custom_support.py is completed with the Python
+Tkinter implementation, execution yields
+
+.. image::  custom-widget.png
+
+The main module is canvas.py and the magic is contained in
+canvas_support.py, which contains the Python/Tkinter code to implement
+the class
+
+In canvas.py the custom widget is referred to in the lines:
+
+.. sourcecode:: python
+
+   self.Custom1 = canvas_support.Custom(top)
+   self.Custom1.place(relx=0.0, rely=0.0, relheight=1.0, relwidth=1.0)
+
+In canvas_support.py the line of code:
+
+.. sourcecode:: python
+
+   Custom = Frame
+
+is generated by PAGE causing the Custom widget to implemented as a
+Frame widget. In other words, the name Custom refers to the Class
+frame. This allows PAGE to display the Custom widget as a Frame widget
+with the annotation of "Custom widget" and the execution of the
+generated Python code to display the Custom widget as a Frame prior to
+including the tkinter implementation in the support module.
+
+The user-added implementation of the ScrolledFrame class at the bottom
+of canvas_support.py begins as follows:
+
+.. sourcecode:: python
+
+
+   import tkinter
+
+   # I found this code on the web at and thought it would
+   # implement a canvas widget that I could use with PAGE, but I don't
+   # understand it well enough to put it in my supported widgets.
+
+
+  GM_KEYS = set(
+          list(vars(tkinter.Place).keys()) +
+          list(vars(tkinter.Pack).keys()) +
+          list(vars(tkinter.Grid).keys())
+          )
+   
+   class ScrolledFrame(object):
+      _managed = False
+      # XXX These could be options
+      x_incr = 10
+      y_incr = 10
+   
+      def __init__(self, master=None, **kw):
+          self.width = kw.pop('width', 200)
+          self.height = kw.pop('height', 200)
+  
+          self._canvas = tkinter.Canvas(master, **kw)
+          self.master = self._canvas.master
+   
+          self._hsb = tkinter.Scrollbar(orient='horizontal',
+                  command=self._canvas.xview)
+          self._vsb = tkinter.Scrollbar(orient='vertical',
+                  command=self._canvas.yview)
+          self._canvas.configure(
+                  xscrollcommand=self._hsb.set,
+                  yscrollcommand=self._vsb.set)
+   
+          self._placeholder = tkinter.Frame(self._canvas)
+          self._canvas.create_window(0, 0, anchor='nw', window=self._placeholder)
+         ...		
+
+Finally, the key line of code in canvas_support.py:
+		 
+.. sourcecode:: python
+
+   Custom = ScrolledFrame
+
+causes the name "Custom"
+to refer to the class ScrolledFrame. It overrides the previous
+reference to the class Frame. It is the incantation magic that causes
+the Custom1 widget in canvas.py to be implemented as an instance of
+the ScrolledFrame class.
+
+.. _lib_demo:
+
+
+Lib Demo
+````````
+
+This is a second example using the ScrolledFrame widget.
+
+For testing of PAGE, I recoded a photo library program which I wrote
+several years ago using PAGE to generate the seven GUI's required for
+the program.  For this example, I have stripped it down to just one
+GUI which provides multiple display of just one image. 
+
+The demo generates the following window:
+
+.. image:: lib_demo.png
+
+It displays repeated copies of the thumbnail image of a particular
+photograph as images on a Button widget. If one selects an image
+button with Button-1, a message appears containing the index of the
+button. If one selects a button with Button-3, a popup menu appears.
+The Zoom cascade menu in both the toplevel window and the popup menu
+allows one to change the size of the images displayed.  There is only
+one image included in the example and it is displayed 30 times.
+
+When the toplevel window is filled, the program determines, the
+maximum number of images that will fit horizontally and puts that
+number in each row. If the image is too big to fit, one image per row
+is displayed but spills over the edge.
+
+I have included the Busy Cursor code which is located in the shared
+module. However, the refresh is so fast, one can hardly see the
+different cursor.
+
+
+.. 
+.. This is a very large example showing rework and a custom widget.
+.. 
+.. For testing of PAGE, I recoded a photo library program which I use
+.. frequently.  FotoAlbum is a multiple window application using seven main
+.. windows. This rewrite exercised rework because my rule was that
+.. whenever I changed anything including menus, event bindings, or GUI
+.. appearance I would rerun PAGE for that window and use the generated
+.. GUI module unchanged. I am ambivalent about including this example for
+.. several reasons
+.. 
+.. + It is strictly a Linux application using several Linux-only commands
+..   and probably not usable by many PAGE users.  
+.. + I have not done
+..   enough to clean up the coding style. It definitely is not written in
+..   recommended text book style.  Further, I have rushed to have an
+..   implementation ready for the 4.8 release. Any suggested improvements
+..   would be welcome.  
+.. + It is pretty complex using a custom canvas
+..   widget and image processing as well as MySql.  
+.. + It is still under
+..   development.
+.. 
+.. It does however show solutions I found to several problems including:
+..  
+.. + How I share global variables and routines among the support
+..   modules.
+.. + How I used a context menu to apply actions to selected thumbnail
+..   images.
+.. + How I incorporate a progress bar with several different actions.
+.. + How I incorporated a custom canvas widget found on the web.
+.. + All menu generation was done using the Menu Editor.
+.. + All GUI bindings were done using the Bindings Editor. The 
+..   bindings in the custom widget were done manually.
+.. + This is a big example of sing rework, I must have changed one or
+..   another GUI at least fifty times without having to rewrite a support
+..   module. 
+.. + Use of busy cursors.
+.. + Use of a GUI window for realizing more than one function.
+.. 
+.. At one point in producing this example, the example comprised of 5546 lines of
+.. code total of which 1976 or 36% were generated by PAGE.
+..  
+
+.. _scrolledlistbox:
+
+ScrolledCheckedListBox
+``````````````````````
+.. image:: scrolledchecklistbox.png
+
+This annotated example written by Greg Walters is the best example of
+the definition and use of a Custom Widget that I have seen. Included
+is an extensive write up on usage.
+
+Dual
+````
+
+.. image:: dual.png
+
+
+This directory contains an exeample of a GUI with two different custom
+widgets, ScrolledCheckedListBox and ScrolledFrame, which were written
+externally from PAGE. The variants are "_d" and "_g" which give rise
+to class names "Custom_d" and "Custom_g" in the GUI module and which
+are renamed ScrolledFrame and ScrolledCheckedListBox in the support
+module.
+
+The ScrolledCheckedListBox was written by Greg Walters and is
+borrowed from his ScrolledCheckedListBox example picked up and stuffed
+into a new "dual" toplevel widget along with a rehash of my lib_demo custom
+widget. My original ScrolledFrame proved to have some problem with the
+scroll bars, so I modified it along lines which I borrowed from the
+ScrolledCheckedListBox widget. The toplevel also has a menubar
+borrowed from lib_demo so the entries apply to the ScrolledFrame.
+
+There is a Tsizegrip widget to facilitate resizing the GUI. The event
+'<ButtonRelease-1>' is bound to the Tsizegrip so that when Button1 as
+released  at the end of a resize, the Custom widget on the right is
+refreshed.
+
+You may notice that there is a bunch of special code in
+ScrolledCheckedListBox.py  to make that custom widget work with both
+Windows and Linux.
+
+Two
+---
+
+This is an example of a project which contains two simple windows w1
+and w2.  It issustrates how the support module for window 1 creates
+window 2 and passing it a parameter which is used to set a label. It
+also has another example of the TProgressbar widget.
+
+Three
+-----
+
+This example has three GUI's where The main GUI invokes a second which
+invokes the third which sports popup menus bound to the buttons.
+
+.. _rplay:
+
+Rplay
+-----
+
+.. image:: rplay.png
+
+This example was written as a music server for my Raspberry Pi which
+drives my audio system from CD images stored on a Linux box. I use this
+program daily.  In this example I have a number of different bindings
+and utilize a number of text widget tricks that I discovered by
+experimentation as well as using multiple threads to run the mp3
+player while keeping the GUI fairly responsive.
+
+Hide
+----
+
+An example shows how to hide a widget and later retrieve it. This is
+an example of dynamic widgets.  See :ref:`dynamic_widgets`.
+
+Labelframe
+----------
+
+Greg Walters contributed this example to help debug the recent fixes
+to the handling of labelframe widgets.
+
+.. image:: labelframe.png
+
+.. _cal2:		   
+
+Calendar_2
+----------
+
+This example uses the Calendar widget from the ttkwidgets package.
+
+.. image:: cal2.png
+
+
+Here the Calendar widget is tread as a Custom widget. However I didn't find  attributes I could set in the init
+function of the support module. But looking at the example code for the
+Calendar widget, I saw that Calendar is instantiated with the following
+statement:
+
+.. sourcecode:: python
+
+	calendar = Calendar(window, year=2015, month=3, selectforeground='white',
+                    selectbackground='red')
+
+
+So I used the following code in the support module:
+
+
+.. sourcecode:: python
+
+    class Cal(Calendar):
+        def __init__(self, master, **kw):
+            Calendar.__init__(self, master, year=2019, month=9,
+                          selectforeground='white', selectbackground='red')
+    Custom = Cal
+
+.. _sfimage:
+	
+Scrolledwindow
+--------------
+
+These examples can be found in the examples-3/scrolledwindow subdirectory.
+
+This exemplifies the creation of a Scrolledwindow and populates it with
+a column of Button widgets. 
+
+This was the first example that I constructed using the Scrolledwindow
+widget. The files are f.tcl, f.py, and f_support.py.
+
+.. image:: scrolledwindow.png
+
+
+This example is a rewrite of the lib_demo example described above. The
+files are new.tcl, new.py, and new_support.py.
+
+.. image:: lib_sframe.png
+
+
+
+		   

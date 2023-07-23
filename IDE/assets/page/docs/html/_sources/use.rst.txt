@@ -1,0 +1,3527 @@
+
+.. _use:
+								   
+Using PAGE
+=========================
+
+PAGE is built upon the program Visual Tcl, but is different because of
+differing objectives of the two programs.  Visual Tcl was conceived as
+complete build environment for Tcl. It included facilities for
+managing projects with multiple windows, creating of GUI's, binding
+actions with callback procedures, creating menus, writing functions,
+and testing the application, all the while supporting many different
+widget sets and several geometry managers. PAGE is limited to defining
+a GUI windows using Tk and ttk widgets and the placer geometry
+manager; there are better environments for finishing and debugging
+Python programs once you have code for the GUI.
+
+PAGE makes use of the Visual Tcl facilities for creating a single GUI
+window, assigning attributes to widgets, binding events to callback
+procedures, and creating menus. PAGE also automatically generates
+skeletal callback functions and supplies much of the boilerplate code
+for running Tkinter.
+
+When PAGE generates the code for a GUI, all of the code for causing
+Python to create and map that window is generated - a Python classes
+for the toplevel windows with all the code necessary to display the
+window.  The generated code is executable and you can see just how the
+GUI will look in a Python environment.
+
+
+I often use the generated GUI classes as starting points for
+customization. When you are not sure how to start or want to quickly
+try out some GUI ideas, PAGE is very useful because it generates all of
+the boilerplate necessary.
+
+PAGE is invoked by executing the "page" script located in the page
+directory. I go to that directory and issue the command:
+
+.. sourcecode:: python
+    
+    ./page [options] [filename]
+
+
+==============    =================================
+PAGE Options
+==============    =================================
+   null            rcfile is ~/.pagerc
+--p <profile>     rcfile specified by filename
+---d               no rcfile, use default values
+---s               select the rcfile to be use
+---help            print help message. No execution.
+==============    =================================
+
+I preface the command with "./" to be sure I am executing the page
+script in the page directory. By including "page" in the PATH
+environmental variable, one can work in any directory. 
+
+PAGE can be invoked with zero or one file names.  If supplied the file
+name should have an extension of ".tcl".  If
+another extension is supplied that is interpreted as an error and PAGE
+terminates. If no extension is given in the file name or the file name
+ends in "." , an extension of ".tcl" is assumed by PAGE. If a file name is specified, the file should be a tcl file
+saved during a previous PAGE session; it will be opened as PAGE begins
+executing as an alternative to File->Open for proceeding from a saved
+PAGE session.  Near the top of a ".tcl" design file created in PAGE
+there is a comment containing version information and a timestamp. If
+that version information is not present then PAGE will refuse to open
+the file. Due to a user request the filename may contain blanks
+starting with version 4.10 but I do not recommend that.
+
+As you use PAGE to build a GUI, you can save the current state of the
+GUI at any time from the File->Save of File->Save As menu.  In fact,
+it is a good idea to save your status often in case PAGE fails or
+dies.
+
+
+.. _naming:
+
+Naming Conventions
+``````````````````
+PAGE generates several files. The main ones are the project file which
+has the extension of ".tcl" and two Python modules with extensions of
+".py". The filename portion of the project module (the part of the name
+without the ".tcl" is used to name the GUI module and the support
+module. Further the name of the support module is incorporated in an
+Python import statement and the requires that the name must be a legal
+python identifier.
+
+For version 4.10, it was suggested that PAGE check the syntax of
+Python function names. This sounded easy but involved several
+problems.  I have since decided that this was a bad idea and decided
+not to use it. There are too many special cases and it certainly does
+not fit with the move to Python3; it's gone.
+
+The
+toplevel class name is based on the Toplevel widget alias just like any other
+widget while submenu names are completely manufactured. 
+
+
+Overview
+````````
+
+This section attempts to describe the main functionality of PAGE when
+building an application with a single root window. It will yield a
+Python module which implements the application interface.
+
+One uses PAGE to generate a GUI as follows:
+
++ Start PAGE by executing "page" or activating the PAGE icon on
+  the Windows desktop. This will create a toplevel window which you can then
+  populate.
++ Drag the toplevel window to where you want it.
++ Resize the toplevel window by dragging a corner or an edge.
++ Change the title by changing the title attribute in the Attribute Editor.
++ Add a menu to the top level using the Menu Editor entered from
+  Widget->Edit Menu in the main menu if desired.
++ Drag appropriate widgets from the tool bar to the toplevel window or
+  other previously placed container widgets.
++ If desired to make the generated code more readable, specify an
+  unique alias for the widget.
++ Adjust properties of the widgets and the toplevel window as desired.
+  Some of those properties will include specification of functions to
+  support the GUI such as to load list box, or to respond to mouse
+  selection, etc. Included can be the specifications of event bindings.
++ Use the bind specification facilities to bind events to
+  functions.
++ Additions toplevel windows can be added by selecting the toplevel
+  entry in the Widget Toolbar. They can be populated as above.
++ When the windows have the appearance that you want, select
+  Gen_Python->Generate Support Module. A new window will appear and fill
+  with the skeleton functions and the definitions of the Tkinter variables.
+  Save the source window of the python console.
+
++ Then select Gen_Python->Generate Python GUI from the main menu.  A
+  new window, a Python Console will open and fill with the Python
+  code, which I call the GUI module. To generate the support module
+  select Gen_Python->Generate Support Module, which creates and fills
+  another Python Console with the generated skeleton support module.
+
++ You can save the code in  one or both of the Python modules and then
+  try executing the GUI module to see if you like what you have designed.
+
+
+
+.. Placing and Modifying Widgets
+.. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Toplevel Geometry
+`````````````````
+
+PAGE generates  toplevel Tk windows which are the users GUI for
+his application. (One can have multiple GUI windows; see
+:ref:`Applications with Multiple Top-Level Windows`.)  
+As elsewhere with Tk and PAGE, there is more than one way to specify
+where the GUI window will appear on the application user's
+screen. 
+
+When the Python code is generated it will contain code
+that would place the GUI at the exact spot specified.  If you had
+placed it at pixel specification +1000+300, it would end up 1000
+pixels from the upper left corner and 300 pixels down. If the Python
+code was then executed on a machine with a screen size of less than
+1000 pixels, the GUI would not appear; it had been placed beyond the
+edge of the screen.
+
+.. Similarly for a
+.. size spec corresponding to 400x300. Fine if the target screen is the
+.. same resolution as the design screen.  
+.. However, if the target screen
+.. has higher resolution than the design screen, then the GUI would
+.. appear scrunched up toward the upper left corner of the screen.  The
+.. opposite effect will occur if displayed on a screen with lower
+.. resolution. The other effect of differing resolution between the PAGE
+.. screen and the target screen is that the GUI window could resize from
+.. poster size to stamp size.
+
+.. _origin:
+
+Alternatively,the Python code generation addresses the toplevel
+placement with a new attribute - "default origin".  The "default
+origin" preference, if selected will cause the generated Python GUI
+window to placed on the screen at the default location as determined
+by the system window manager.  If false, the location will be
+determined from where the toplevel window is placed in PAGE. The
+default for the this attribute is false, but can be changed by means
+of the Preferences mechanism. A default of false will cause PAGE to
+behave as before. Unfortunately, I was faced with an unclear mnemonic
+in the Attribute Editor or a double negative; I chose the latter.
+
+.. The "proportional geometry" attribute works as follows.  The width of
+.. the toplevel window is expressed as the ratio of the actual width in
+.. PAGE to the screen width of the PAGE screen. Similarly for height and
+.. x location and y location.  These ratios are then embedded in the
+.. generated Python code where they are multiplied by the screen
+.. dimensions of the target screen to determine the actual geometry of
+.. GUI window. When combined with relative placement of the widgets
+.. inside the toplevel window, things may work out satisfactorily. The
+.. default value for this attribute is false but by may be changed with a
+.. Preferences setting. This leads to the same behavior as prior
+.. versions. Proportional geometry is related to :ref:`relative`.
+
+.. My recommendations are as follows.  The simplest case that avoids the
+.. most trouble is to use the default origin and not to use proportional
+.. geometry. This will work fine in the case where you use the GUI on your
+.. own screen or screens with similar resolution. If you have multiple
+.. GUI windows, then you may want to fix the GUI window locations. Use
+.. proportional geometry when you know there will be resolution problems.
+
+
+.. Adding Widgets
+.. ``````````````
+
+.. All that is necessary to add a widget to the GUI is to select it with
+.. Button-1 from the Widget Toolbar, position the cursor inside the
+.. destination container and again press the Button-1.  A small version
+.. of the widget will appear with its upper left-hand corner at the point
+.. of the Button-1 click.
+
+.. The geometric attributes of toplevel widgets
+.. resize, minsize, and maxsize were ignored when generating the GUI
+.. module. That is now corrected. Users can now specify these values and
+.. they are reflected in the generated Python code.  Note that the default
+.. values of maxsize are determined by the screen size of the users
+.. computer while the default value of minsize is 1 pixel.  Users should
+.. really set reasonable values for the minsize and maxsize.
+
+
+Aliases
+```````
+
+.. Often algorithmically generated names can be difficult to understand
+.. in computer generated code.  To reduce the problem in PAGE, users can
+.. specify more easily understood names called aliases.
+
+An alias is a user specified identifier of a widget in the generated
+code. Obviously, aliases must be unique within the class which will be
+generated in the Python code. 
+
+* An easy way to specify an alias is to select the target widget with
+  a Button-3 click and then select "Set Alias ...".  Another small
+  window will appear and one can add the alias. Finally close that
+  window by selecting the "check" or with the Enter key.
+
+* Another way to enter an alias is to select a widget with Button-1
+  and then select "Set Alias ..." from the Option menu in the main
+  PAGE window.
+
+* Also, one may specify an alias by selecting a widget and editing the
+  "Alias" field in the top section of the Attribute Editor.
+
+An alias must be a legal python identifier. There are numerous schemes
+for generating such names but one that has been suggested is based on
+CamelCase. It is:
+
++ Buttons could start with 'btn',  i.e. btnQuit, btnNew, etc.
++ Entry boxes could start with 'txt', i.e.  txtFirstName, etc.
++ Check boxes could start with 'chk' I.E. chkDoThis, etc.
++ Radio Buttons could start with 'rdo' or 'rbtn'.
+
+Note that PAGE has an option to automatically generate aliases.  These
+aliases are algorithmically generated name but are more readable than
+the default generated names.  This is controlled by a new field in the
+Preference window.  I recommend that you go into Preferences, check
+the value and save the preferences.
+
+.. _balloon:
+
+Balloon Help - Tooltips
+```````````````````````
+
+PAGE supports balloon help also called
+tooltips with many of the widgets. The scrolled widgets do not support
+balloon help.
+
+To use balloon help with any of the supported widgets, merely select
+the widget and supply the desired tooltip message in the attribute
+"tooltip text" in the Attribute Editor.  If balloon help is available
+The message may be multi-line by including "\\n" as line breaks.  For a
+given widget that attribute will be present in the Attribute
+Editor. If you do not wish to use tooltips just ignore the "tooltip
+text" attribute; the balloon preference checkbox has been eliminated
+from the preference window.
+
+The tooltip message may also be specified from the Widget sub menu of
+the widget popup menu which is accessed by selecting Button-3 while
+the widget is selected.
+
+The Tk default font is really tiny, so the Preferences have been
+extended to allow specification of the tooltip font.
+
+If the user creates a tooltip in the design phase by specifying a
+non-blank tooltip text attribute in the Attribute Editor the following
+support code is add to the GUI module:
+
+.. sourcecode:: python
+
+    from time import time, localtime, strftime
+    class ToolTip(tk.Toplevel):
+        """ Provides a ToolTip widget for Tkinter. """
+        def __init__(self, wdgt, msg=None, msgFunc=None, delay=0.5,
+                     follow=True):
+            self.wdgt = wdgt
+            self.parent = self.wdgt.master
+            tk.Toplevel.__init__(self, self.parent, bg='black', padx=1, pady=1)
+            self.withdraw()
+            self.overrideredirect(True)
+            self.msgVar = tk.StringVar()
+            if msg is None:
+                self.msgVar.set('No message provided')
+            else:
+                self.msgVar.set(msg)
+            self.msgFunc = msgFunc
+            self.delay = delay
+            self.follow = follow
+            self.visible = 0
+            self.lastMotion = 0
+            '''
+            self.msg = tk.Message(self, textvariable=self.msgVar, bg='#FFFFDD',
+                       font=tooltip_font,
+                       aspect=1000)
+            '''
+            self.msg = tk.Message(self, textvariable=self.msgVar, bg=_bgcolor,
+                       fg=_fgcolor, font="-family {DejaVu Sans} -size 12",
+                       aspect=1000)
+            self.msg.grid()
+            self.wdgt.bind('<Enter>', self.spawn, '+')
+            self.wdgt.bind('<Leave>', self.hide, '+')
+            self.wdgt.bind('<Motion>', self.move, '+')
+        def spawn(self, event=None):
+            self.visible = 1
+            self.after(int(self.delay * 1000), self.show)
+        def show(self):
+            if self.visible == 1 and time() - self.lastMotion > self.delay:
+                self.visible = 2
+            if self.visible == 2:
+                self.deiconify()
+        def move(self, event):
+            self.lastMotion = time()
+            if self.follow is False:
+                self.withdraw()
+                self.visible = 1
+            self.geometry('+%i+%i' % (event.x_root + 20, event.y_root - 10))
+            try:
+                self.msgVar.set(self.msgFunc())
+            except:
+                pass
+            self.after(int(self.delay * 1000), self.show)
+        def hide(self, event=None):
+            self.visible = 0
+            self.withdraw()
+        def update(self, msg):
+            self.msgVar.set(msg)
+        def configure(self, **kwargs):
+            backgroundset = False
+            foregroundset = False
+            # Get the current tooltip text just in case the user doesn't provide any.
+            current_text = self.msgVar.get()
+            # to clear the tooltip text, use the .update method
+            if 'debug' in kwargs.keys():
+                debug = kwargs.pop('debug', False)
+                if debug:
+                    for key, value in kwargs.items():
+                        print(f'key: {key} - value: {value}')
+            if 'background' in kwargs.keys():
+                background = kwargs.pop('background')
+                backgroundset = True
+            if 'bg' in kwargs.keys():
+                background = kwargs.pop('bg')
+                backgroundset = True
+            if 'foreground' in kwargs.keys():
+                foreground = kwargs.pop('foreground')
+                foregroundset = True
+            if 'fg' in kwargs.keys():
+                foreground = kwargs.pop('fg')
+                foregroundset = True
+    
+            fontd = kwargs.pop('font', None)
+            # print(f'Font: {fontd}')
+            # text = kwargs.pop('text', None)
+            if 'text' in kwargs.keys():
+                text = kwargs.pop('text')
+                if (text == '') or (text == "\n"):
+                    text = current_text
+                else:
+                    self.msgVar.set(text)
+            reliefd = kwargs.pop('relief', 'flat')
+            justifyd = kwargs.pop('justify', 'left')
+            padxd = kwargs.pop('padx', 1)
+            padyd = kwargs.pop('pady', 1)
+            borderwidthd = kwargs.pop('borderwidth', 2)
+            wid = self.msg      # The message widget which is the actual tooltip
+            if backgroundset:
+                wid.config(bg=background)
+            if foregroundset:
+                wid.config(fg=foreground)
+            wid.config(font=fontd)
+            wid.config(borderwidth=borderwidthd)
+            wid.config(relief=reliefd)
+            wid.config(justify=justifyd)
+            wid.config(padx=padxd)
+            wid.config(pady=padyd)
+    		
+The code above allows tooltips to be modified from within the support
+module. For instance, if the button "btn_dest" has a tooltip message
+of "Destination", then the GUI module will contain code similar to the
+following:
+
+.. sourcecode:: python
+
+   self.btn_dest_tooltip = \
+   ToolTip(self.btn_dest, '''Destination''')
+
+which allows the following code in the support module to update the
+tooltip message text as well as other message attributes:
+   
+.. .. sourcecode:: python
+.. 
+..    w.btn_dest_tooltip.update("New tooltip")
+.. 
+.. A more general configuration function allows one to change most
+.. attributes of the tooltip message including background, foreground,
+.. font, borderwidth, relief, justify, padx, and pady. All of these
+.. attributes are described in the tcl man pages for the message
+.. command. The changes are effected by code in the support module like:
+
+.. sourcecode:: python
+
+	w.btn_dest_tooltip.configure(background='red', relief='sunken')			
+
+.. Finally, if the tooltip code above is present in the GUI module, then the
+.. following code in the support module will create a tooltip for a
+.. widget:
+
+The above is similar to the way that attributes of other widgets can
+be modified from the support module.
+
+.. .. sourcecode:: python
+.. 
+..     import tip
+..     other_tip = tip.ToolTip(w.btn_quit,w.tooltip_font,"Exit Button", delay=0.5)
+   
+The tooltip support was made possible by the work of Greg Walters. 
+
+Selecting and Modifying a Widget
+````````````````````````````````
+
+Selecting a widget is key to modifying a widget.
+There are several ways to select a widget for modification and I don't
+want to keep repeating the variations through out this document.
+
+
++ For simple widgets like buttons or text boxes you can select the
+  widget either by selecting the widget with Button-1 in the GUI or in
+  the Widget Tree.
+
+..
+
++ With more complex widgets like notebooks, paned windows, or scrolled
+  widgets, which have child widgets inside the main widget clicking
+  Button-1 inside the widget will select a child widget rather than
+  the whole widget.  The parent widget may be selected with
+  Control-Button-1.
+
+..  
+  
++ In the case where a widget is embedded in a container such as a
+  frame, the container can be selected with Shift-Button-1. This is
+  particularly helpful when a widget fills the container and you want
+  to modify the container.
+
+..  
+  
++ Finally, the widget may be selected with Button-1 in the Widget
+  Tree.  This is particularly useful with the complex widgets
+  mentioned above and also for selecting frames which have been filled
+  with child widgets.
+  
+
+Once selected there are several ways to modify the widget.  The
+location and the geometry may be altered as well as the attributes of
+the widget:
+
++ A selected widget may be moved by dragging the widget or resized by
+  dragging a handle. When the mouse is over a handle, it turns red.
+
+..  
+
++ Attributes can be changed in the Attribute Editor. Geometric
+  attributes can be changed Attribute Editor also.
+
+..  
+  
++ Some changes can be made using the Widget popup menu.
+
+
+If you are working with standard Tk widgets, there are many options
+that can be modified whereas the ttk widgets have very few options,
+their appearance being governed principally by the specified theme.
+
+Using the Attribute Editor to modify attributes and geometry of the
+scrolled widgets has a bit of a twist. They are really compound widget
+containing subwidgets such as a text widget or an entry widget. You may
+change attributes of the subwidget by selecting the subwidget in
+the Widget Tree and then modifying the desired attributes or you may
+select the parent scrolled widget and modify its geometry in the
+Attribute Editor. Of course,you may change the geometry of the
+scrolled widget by selecting it with Control-B1 and dragging the mouse
+like any other widget.
+
+.. _multiselection:
+
+Multiple Selection
+``````````````````
+A limited facility for using multiple selection of widgets has been
+added to PAGE. The first functions using multiple selection were limited
+to the :ref:`Stash and Apply <apply>` facility and the Attribute Editor.
+Multiple selection basically creates a list of widgets to be used by
+the Apply function and the Attribute Editor. With version 5.1
+additional functions have been added. They include the ability to move
+members of the multiple selection set in unison provided that they
+share the same parent. 
+
+Multiple selections are made by selecting widgets with Button-2. This
+is similar to simple widget selection. When a widget is so selected,
+the handles are a different color, green, for emphasis. Multiple
+selections can also be made by selecting widgets in the Widget Tree
+with Button-2. Multiple selections are mirrored in the Widget Tree. If
+one selects a complex widget such as a TNotebook widget by placing the
+cursor inside the widget, the complex widget is selected.
+
+Multiple selection may not change any existing Button-1 selection.
+Selecting a widget with Button-1 which is one of the multiple
+selections removes the widget from any multiple selection and performs
+selection.
+
+To clear all multiple selections use Options->Remove Multi Selections
+from the main menu or use the Control-Delete key pair. To remove one
+widget from the multiple selection use the popup menu. Similar results 
+can be achieved in the Widget Tree from the popup menu there.
+
+
+The group of multiple selected widgets can be moved as a group by
+placing the cursor inside one of the selected widgets and dragging
+with Button-2. The arrow keys can be used to nudge the multi-selection
+group in unison but not to resize the group. One does a Button-2
+selection of a multi-selection widget and then uses the arrow keys.
+
+Other functionality is accessed via the multiple selection popup  menu.
+
+.. image:: multi-menu.png
+
+The menu is accessed by Button-3 inside any of the selected widgets.
+The action is as follows for each of the command in the menu:
+
++ Remove All Multi Selections: Removes all Multi Selection
+  designations.
+
++ Remove One Multi Selection: Removes the current widget from the
+  Multi Selection list.  
+
++ Align Horizontal: All selected widgets are aligned based on the y
+  value of the northwest handle of the selected widget
+  containing the cursor. This applies only to the selected widgets
+  with the same parent as the selected widget containing the cursor.
+
++ Align Vertical: All selected widgets are aligned based on the x
+  value of the northwest handle of the selected widget
+  containing the cursor. This applies only to the selected widgets
+  with the same parent as the selected widget containing the cursor.
+
++ Spread Horizontal: All selected widget sharing the same parent as
+  the selected multi widget are spaced evenly horizontally in the
+  parent.
+
++ Spread Vertical:All selected widget sharing the same parent as the
+  selected multi widget are spaced evenly vertically in the parent.
+
++ Center Horizontal: All selected widget sharing the same parent as
+  the selected multi widget are centered horizontally in the
+  parent. This is a useful command following a Spread Vertical
+  command.
+
++ Center Vertical: All selected widget sharing the same parent as
+  the selected multi widget are centered vertically in the
+  parent. This is a useful command following a Spread Horizontal
+  command.
+
++ Undo: This undoes the last command.  It is a multi-level undo
+  facility. It can also be invoked with the key shortcut
+  <Control-D>. See the section below.
+
+The multi selection list can contain just one item. That allows one to
+use the Center Horizontal and Center Vertical commands to center a
+single widget.
+
+I considered extending the facility for deleting widgets to remove all
+the multiple selection widgets but felt that that would be too prone to
+error. And I have not seen how to extend copy and paste to handle
+multiple selections.
+
+Selection and geometry events are summarized in the following table of
+related key pairs:
+
+=============================     ============================================
+Widget events                     Function
+=============================     ============================================
+Button1                           Select Widget
+Control-Button1                   Select complex widget (like a Scrolled widget)
+Shift-Button1                     Select the containing widget
+Move Button1 inside widget        Move widget
+Move Button1 inside handle        Resize widget
+Move Button2 inside widget        Move multiple widget group
+Button2                           Add widget to multiple selections
+Control-Delete                    Clears all Multiple Selections.
+Alt-D                             Clears all Multiple Selections.
+Arrow Keys                        Nudge the widget position 1 pixel.
+                                  Works with multiple selection widgets
+Shift Arrow Keys                  Nudge the widget size 1 pixel.
+                                  Does not work with multiple selection widgets
+Control-Z                         Undo								  
+=============================     ============================================
+
+.. _undo:
+
+Undo
+````
+
+Undo provides the function of retracting certain operations in
+PAGE. Some of the operations subject to undo are those provided in
+Multi Selection popup menu described in the previous section. In
+addition, undo will retract widget dragging operations that change
+widget locations as well as geometry changes made with arrow
+keys. Undo is invoked from the multiselect popup menu and the
+Control-Z shortcut.
+
+Operations that do not work with undo include:
+
++ Operations which change widget attributes,
++ Operations which involve changing geometric attributes in the
+  Attribute Editor,
++ Cut, Copy, and Paste operations,
+
+Undo should be considered an experimental feature, it contains a
+number of rough edges that I have not been able to resolve. Please use
+it carefully, report problems, and save often.
+
+There is no redo operation.
+
+Modifying the Geometry of a Widget
+``````````````````````````````````
+
+Geometry refers to the location of the widget as well as its width and
+height.
+
+Like many things in PAGE, there are several ways to change the geometry:
+
++ A selected widget may be moved by dragging the widget or resized by
+  dragging a handle. When the mouse is over a handle, it turns
+  red. For complex widgets, it is necessary to depress the Control key
+  while dragging.
+
+.. _arrow:   
+
++ The arrow keys may be used.The arrow keys offer a way to make minor
+  adjustments to the geometry of a selected widget. The arrow keys
+  move the widget a short distance in the obvious way.  Shift with the
+  arrow keys change the size in the obvious way while leaving the
+  northwest handle anchored. I find the arrow keys very useful when
+  trying to align or space widgets. However arrow keys do not modify
+  toplevel widgets. This usage of arrow keys works with locked widgets
+  as well as unlocked widgets.
+
+..
+
++ The arrow key can be used to change pane sizes in a TPanedwindow but
+  it is necessary to select a handle of the pane with button-1 and
+  then the arrow key. You can only move the window sash. 
+
+..
+
++ The geometric attributes in the Attribute Editor may be changed.
+  The bottom section of the Attribute Editor contains a number
+  editable attributes which when changed immediately affect the widget
+  geometry. For instance, if you want a widget located half way across
+  its container set "relative x" to be 0.5.  If you want it to be 300
+  pixels down from the top, set the "y position" to 300. You can do
+  similar things with width and height.
+
+Locking the Geometry of a Widget
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are times when one wants to lock the position of a widget within
+its container to avoid inadvertently moving or resizing it with the
+mouse. That can be accomplished by selecting the lock widget command
+from the context menu.  That is, select the widget and click Button-3
+to bring up the context menu and then select "Lock Widget". "Unlock
+Widget" has the obvious effect. When a widget is locked, that fact is
+noted in the Widget Tree. With version 4.17, locking is displayed and
+can be changed with the "locked" attribute in the Geometry region of
+the Attribute Editor.
+
+A locked widget can still be move and resized by changing values in
+the geometry section of the Attribute Editor as well as with the arrow
+keys, see :ref:`use of arrow keys <arrow>`. In fact, the adjustments
+need not be multiples of the default grid.  Of course, the container
+widget geometry can be modified with the mouse if not locked.
+
+Fill Container
+~~~~~~~~~~~~~~
+
+"Fill Container" is a feature that was added in version 4.8 and causes
+the selected widget to expand to fill its container provided that
+there are no other widgets already in the container. This function is
+restricted to those widgets for which I think it makes sense, like
+frames, notebooks, scrolled widgets, canvases as well as text and list
+boxes. 
+
+To use this feature activate the Widget popup menu with Button-3 over
+the widget itself or an entry in the Widget Tree and select 
+"Fill Container" from the widget submenu.
+
+Once you have filled a container using this feature, you can select
+the container with Shift-Button-1 to move or resize it with the mouse.
+You can also select the container in the Widget Tree and then change
+the x and y coordinates in the Geometry section of the Attribute
+Editor.
+
+
+Cut, Copy, and Paste
+````````````````````
+
+I think that there is now a useful cut, copy, and
+paste feature in PAGE.  The control-x, control-c, and control-v
+shortcuts work as expected. The basic way it works:
+
+
+  
++ Open the context menu by selecting the widget to be copied with
+  Button-3 and then select Copy or Cut. Alternatively you may select a
+  widget and then control-c or control-x will effect the Copy or Cut
+  operation. if you are copying a menubar select it from the Widget
+  Tree, 
+   
+..  
+
+If the widget to be copied is a toplevel widget:
+
++ Open the context menu of any widget by selecting it with Button-3
+  and then select Paste. Alternatively type control-v.
+
+If the widget is a menubar:
+
++ Select the destination toplevel, Open the context widget by
+  selecting it with Button-3 and select Paste.
+  
+For other classes of widgets:
+
++ Open the context menu of the destination widget with Button-3 and
+  select Paste. Alternatively select the destination widget and type control-v.
+  
+..  
+  
++ Move the mouse to the desired insertion point and click Button-1.
+
+One can cut or copy complex widgets such as frames containing multiple
+widgets like a row of buttons, or notebook widgets. The destination
+widget can be any container widget such as a toplevel widget, a frame,
+or a tab of a notebook widget.  However, a custom widget cannot be a
+destination widget.  One can even copy and paste toplevel windows with
+all its widgets, and menubars.
+
+Copy and Paste are important features because one cannot drag a widget
+from one container widget into another but one can cut or copy and
+paste to get that effect.  For instance if one creates a button in a
+top level window and then decides that it should be moved to a frame
+or a notebook tab, that cannot be accomplished that just by selecting
+the button and dragging it to the frame. However, it can be done with
+cut and paste.
+
+When doing cut-copy-paste I make fewer mistakes by selecting the
+widget the Widget Tree than trying to grab it in the top level window.
+Correct selection is crucially important when trying to select and copy
+nested widgets.
+
+I have implemented cut and it appears to work; however, I never use
+it. There is a sequence of several steps between the selecting cut
+from the menu and completing the paste as well as a lot
+code being executed.  If you get it wrong following a cut, you can't go
+back and retry the operation; the source for the copying is gone. So,
+I stick to copy and paste and then finish with a delete.
+
+One thing that cut, copy, and paste can do is copy from one project
+GUI and paste in another project GUI by using the Borrow
+facility. That usage is addressed in the reuse section. See
+:ref:`reuse`.
+
+Note: if you copy-paste a widget containing images then you **must**
+copy the image to be one resident in the destination project directory
+before paste operation. In fact, it must be in the same relative
+position. In many cases PAGE will volunteer to perform that function.
+
+With version 7 which supports multiple toplevel windows, copy and
+paste have been extended to include toplevel widgets. This allows one
+to copy an entire toplevel window when using the Borrow function. When
+pasting a toplevel widget the toplevel window will appear slightly
+offset from its original position so you can see it. If the source of
+the copy was a toplevel window in the "borrow" the background color
+will be changed from plum to the active GUI background color.
+
+Note: if you copy-paste widgets which have variables defined, then
+strange things will arise. For instance, if you create a button and
+set its text to "Button" and then define the text variable to
+"zzz". The variable will have the value of "Button".  When you copy-paste
+the Button widget, the new widget text will be determined by the value
+of "zzz" and be "Button". Changing the text attribute will have no
+effect. To change the initial value of text of the new widget you will
+have to delete the variable entry, change the text attribute and the
+add the variable. You probably don't want to use the same text for
+more than one button widget.
+
+Repeat: If you copy-paste a widget containing images then you better
+copy the image to be one resident in the new directory.
+
+.. _apply:
+
+Stash and Apply - Propagate Widget Options
+``````````````````````````````````````````
+It is possible to propagate options from one widget to other widgets.
+One may save the configuration of a particular widget and subsequently
+apply selected options to other widgets. This is similar the function
+of the context menu of the Attribute Editor. Thus one may easily align
+widgets, make buttons the same size, make the background colors the
+same, and make other options identical.
+
+.. _stash:
+
+The current options of the selected widget are stored , "stashed", by
+selecting "Stash Config" from the Widget context menu. The stashed
+options are displayed in the Apply Window.  Since a given widget can
+contain many options, only the options which have values different
+from the default value as well as height and width are displayed.
+
+The options to be propagated are checked in the main subwindow. The
+destination is based on the currently selected widget.
+
+In the Apply Window,  Apply menu item in the
+menu bar leads to two similar submenus:
+
+.. image:: apply-submenu.png		   
+
+The first entry "Current Widget" causes the selected options to be
+applied to the currently selected widget.  To apply stashed options to
+another widget, one selects the receiving widget from the GUI or the
+widget tree, checks the options to be applied, and finally selects 
+"Current Widget" from the Apply submenu.
+
+The next entry "All widgets in Multi Selection" will apply all of the
+checked values to each of the widgets in the multi selection. This
+leaves the selection unchanged.
+
+The next entry "All widgets in Toplevel applies the options to all
+widgets in the Toplevel but not to the Toplevel itself.
+
+The final entry "All widgets same in class same parent" does not
+change options of the parent. This ability is a good argument for
+grouping widgets into container widgets like frames.
+
+Very similar functions are supplied which will change widget options to the
+default value using the "Reset to default" submenu of apply.
+
+In case you have a window open for using the borrow function, this
+mechanism will only modify widgets in the primary toplevel, i.e., it
+does not modify widgets in the borrow toplevel.
+
+What is written above describes option propagation via the Stash and
+Apply mechanism.  Essentially the same function can be realized by
+Button-3 selection of the option name filed of the Attribute Editor.
+However, that propagates only one option value at a time whereas the
+Stash and Apply will handle multiple options.
+
+.. Widget Menu 
+.. ```````````
+.. 
+.. The Widget Menu, which appears in more than one place including the
+.. main menu as well as the drop menu in the Widget Tree or a top level
+.. window, provides a convenient way to modify some of the widget
+.. attributes. The drop menu is activated with Button-3 applied to the
+.. selected widget and its features are dependent on and apply to the
+.. widget selected. It is seen below:
+.. 
+.. .. image:: widget-menu.png
+.. 
+.. In the case above the widget submenu allows one to easily specify the text
+.. attribute and for specifying multiple line text labels.
+
+Callback Functions
+```````````````````
+The point of building a GUI is to link actions (the execution of
+specific functions called callback functions) to some event within the
+GUI like selecting a button with a mouse key, typing a particular
+character into a text field, resizing window a widget, etc.. Callback
+functions are referenced in either the command attribute of a widget
+such as a button or in a bind statement.
+
+The implementation of the callback functions is located in the support
+module with one exception - popup (or context) menus which are
+generated in the GUI module.  Popup menus will reference callback
+functions which are located in the support module.
+
+PAGE generates skeletal callback functions in the support module. They
+usually have the form:
+
+.. sourcecode:: python
+
+The skeletal function looks like:
+
+.. sourcecode:: python
+
+    def cmd(*args):
+        print('v2_support.cmd')
+        for arg in args:
+            print ('another arg:', arg)
+        sys.stdout.flush()
+
+The one variation is for the support of validation command which is:
+
+.. sourcecode:: python
+
+    def vcmd(*args):
+        print('v2_support.vcmd')
+        for arg in args:
+            print ('another arg:', arg)
+        sys.stdout.flush()
+        return True
+
+Note that the validation function must return either True or False so
+PAGE add the command "return True". The print commands in the callback
+skeleton function is there to aid the PAGE user by showing that the
+command is really executed and with the expected arguments. Of course,
+it is recommended that they be removed in the final application.  
+
+
+With release 4.14, it is possible to list the callback functions which
+have been referenced in the GUI.  That is done from the main menu or
+by the Alt-C shortcut. When invoked the new function opens a special
+window to display all of the callback referenced in the GUI along with
+the name of the referencing widget. This is done by processing the
+widget tree. If you have also created the Python GUI and support
+module, double clicking on the callback function line, a Python
+console will open and display the callback function implementation.
+
+Linking Events to Callback Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I will not try to explain event binding fully for Tk and Tkinter. I have
+read several books and many web pages on the subject but feel little
+mastery.
+
+Binding events to widgets is a very confusing aspect of using Tk and
+Tkinter.  Tk implements a global binding hierarchy in that Tk allows
+one to create bindings between actions and
+
+(1) events within a particular widgets such mouse selection and a
+    particular button, 
+
+(2) events within particular classes of widgets such as mouse selection and
+    all buttons in an application, 
+
+(3) events within all widgets in a
+    toplevel window, and 
+
+(4) events within all the widgets in an
+    application. 
+
+PAGE really assists in only the first type of binding. At least one
+respected documenter recommends against using the other three. If you
+feel it is necessary to class bindings, they can be manually added to
+the support modules.
+
+Grayson, in his book talks about invoking callbacks directly or
+indirectly. Specifying a command attribute leads an indirect invocation
+while specifying a bind command leads to a direct invocation. The
+difference is that the direct invocation passes an event object to the
+callback and the callback function must have an argument list which
+includes a parameter for the event. To see examples of direct and
+indirect invocation of callbacks see the vrex example or the bind example.
+One could also characterize them as clear and confusing, or easy and complex.
+Let me discuss the easy case first, that of specifying a a command attribute.
+
+Many widgets have a command attribute which specifies the code to
+executed when the widget is selected with Button-1.  This is a
+simplified way of binding for the common case of selecting the widget
+with Button-1.  While Tk allows one to specify a block of code, one
+must stick with a function call in Python.  For example, setting the
+command attribute of a button to "foo" so that selecting the Button-1
+will cause the invocation of the function "foo" without arguments. In
+general, the call occurs without the passing of a argument, so it
+does no make any sense to specify a variable parameter.
+
+
+If you want to invoke a function and pass parameters to it, you use a
+lambda expression. Please see section 6.4 of Grayson's book for a fine
+explanation of the use of lambda expressions in this context.  (In a
+nutshell, if Python encounters a function name followed by parenthesis
+it will try to execute the function immediately, whereas the execution
+is desired when the event occurs.)  Let say that if you want to call
+the function foo and pass it x as an argument, what you enter as
+command is
+
+.. sourcecode:: python
+
+    
+    lambda x : foo(x)
+
+
+not
+
+.. sourcecode:: python
+
+    
+    foo(x)
+
+PAGE helps a little with constant parameters like numbers and quoted
+strings by automatically providing the lambda command. So
+
+.. sourcecode:: python
+
+	foo(3)
+
+is OK.	
+
+
+To specify such a command, one selects the widget and then in the
+Attribute Editor enters the command in the Command field. In keeping
+with the Visual Tcl style of having too many ways of doing most things, an
+alternative is to select the widget in the Widget Tree with Button-3
+and then Widget->Set Command. I don't use the alternate method very
+often. I would probably forget it but for this paragraph.
+
+.. _cmd:
+
+With version 5.3, I have simplified the command specification. PAGE
+now will read a command specification such as "foo" or "foo(3)" and
+determine whether a lambda expression is required and if so supply it
+in the generated code. If the user specifies a lambda expression it is
+preserved. The limitation is that PAGE checks arguments to see if they
+are integers, floating point numbers, or quoted strings. If not it
+gives up and issues a warning message. If you need a more complex
+lambda expression you may enter it and it will be respected. If there
+are other cases I consider let me know.
+
+.. _entrycmd:
+
+When it comes specifying "validatecommand" and "invalidcommand"
+options of the Entry widget or Tk_entry widget the command string must
+be a list with first element is the command name and the additional
+elements may include the following script substitutions:
+
+* %d = Type of action (1=insert, 0=delete, -1 for others)
+* %i = index of char string to be inserted/deleted, or -1
+* %P = value of the entry if the edit is allowed
+* %s = value of entry prior to editing
+* %S = the text string being inserted or deleted, if any
+* %v = the type of validation that is currently set
+* %V = the type of validation that triggered the callback (key,
+  focusin, focusout, forced) 
+* %W = the tk name of the widget
+
+An example of a possible validation command entered in the Attribute Editor:
+
+.. sourcecode:: python
+   
+   vcmd %P %S %W
+
+Note that this is a change from earlier documentation. 
+   
+So what will happen is that the Python will rewrite the list as a
+tuple with the script substations encased in quotes. It is unclear
+from the documentation that I found if other parameters are allowed
+but I would guess that they are permissible.  In addition, a skeletal
+function vcmd will be created by PAGE in the support module with a
+variable number of parameters. In the case of the example above the
+value of entry being the first argument, the string being inserted as
+the second, and widget information as the third parameter.  Be warned
+that %W does not pass the widget, it passes the widget converted to a
+string.  I think it is a bug in tkinter. It certainly does not behave
+in the same way in tkinter as it does in Tcl/Tk.
+
+
+So much for the binding of the easy case which essentially defines a
+configuration command for setting the command attribute of a widget in
+the generated Python.  For binding other events to widgets I point you
+to the Bindings Window which builds a bind command. Of course, the
+bind command could be manually coded in init function of the support
+module.
+
+For many widgets the command attribute is the way to go and it is
+tempting to think of <Button-1> as the associated event. Actually,
+<ReleaseButton-1> is the associated event. The difference can be
+important. For instance, the Checkbox widget sets the associated
+variable to the new value as the last step of the <ReleaseButton-1>
+event.
+
+Another zinger is that while the command attribute will generally pass
+zero arguments or the parameters specified in the lambda function. In the case of
+Scale and TScale widgets, the final value of the scale is passed to
+the callback function as the first argument. See :ref:`scale`.
+
+Bindings Window
+~~~~~~~~~~~~~~~
+
+There are many events that can be linked to code. See the Tk man pages
+and Chapter 6 of Grayson. They include responding to the different
+mouse button pressings or releases, a window gaining or loosing focus,
+etc. as well as virtual events. Bind is the command for linking one of
+these events to code and is accomplished by using the Bindings Window.
+Here the code must be a lambda expression because it pass an event
+object containing much useful information to the
+callback. Consequently, the callback function must have an event
+parameter in its argument list.
+
+The Bindings Window can be opened by selecting the widget with
+Button-3 and the selecting Bindings... from the popup menu. Basically,
+
+(1) select the widget in the left column if not already selected, 
+
+(2) Insert the desired event from the Insert menu, 
+
+(3) select the item in the left column, and 
+
+(4) fill in prototype lambda expression in the right hand column.
+
+The Bindings Window can be opened either from the popup menus in
+response to selecting the widget with Button-3 or selecting the widget
+with Button-1 and typing Alt-b. Then select Insert from the menu to
+put the event in to the left pane.  Finally insert the desired code in
+the right pane where a template will appear.
+
+.. Some virtual events are defined within the Tcl/Tk for things like cut,
+.. copy, and paste as well a special virtual events for different Tk
+.. widgets. The bindings mechanism will handle bindings for those virtual
+.. events but there is no supported mechanism for creating such
+.. events. For instance, with the Scrolledtext widget one can select the
+.. text widget, type Alt-b to enter the binding editor, choose Insert
+.. then Advanced, scroll down to show <<Cut>> and select it, then the Add
+.. button and it will appear in the right window of the binding editor
+.. where one specifies the name of a routine say xxx, then select the check to
+.. commit it.  When on then run the program, selects some characters in
+.. the text box and then Ctrl-C, the built in trigger for Cut, the
+.. routine xxx in the support module will be called.
+
+Let's clarify that and look again at 
+
+
+.. image:: binding.png
+
+In the left column you will see the Tcl name of the selected widget and
+below the name a list, initially empty of the events already bound to
+the widget.  In the image two events have already been bound, one of
+which is a user defined virtual event, "<<Bingo>>". 
+Following the event information of the selected widget is a bunch of
+information about the bind hierarchy related to the selected widget. I
+have not found any use for that stuff.
+
+Two things can be accomplished with the Binding Window are: 
+
+(1) define a new binding for the selected widget The key action for
+    the first is to insert a new event. It is done by clicking Insert
+    Menu and selecting one of the actions there.
+
+(2) modify the lambda expression of an existing binding in the obvious
+    way.  
+
+Selecting Insert yields
+
+.. image:: insert-bind.png
+
+If you do not find the action you can select Advanced ...
+
+.. image:: advanced-bind.png
+
+Here you are presented with a wide selection of possibilities. 
+
+First, if you want the event to be the pressing of the key c, select
+the entry box at the top and type "c"; the event "<Key-c>" appears in
+the Event entry box near the bottom. If you want to modify the event
+to require the control key at the same time, select Control from the
+right column and the event becomes "<Control-Key-c>". 
+
+For events other than a key press event, then select an event from
+the left column.  The list of events there is more or less every event
+Tk knows about. I know of no way of listing only those events to which
+a particular widget will respond, so I can't prune the list.
+
+Again, the selected event may be modified by picking a modifier from
+the right column. Notice that the left column contains all of the
+virtual events that Tk knows about. Unfortunately, Tk skips several
+and I have tried to add them but I probably missed some.  If you are
+going to generate code for a user defined virtual event, say
+<<Bingo>>, or one missed by Tk, you can add that virtual event to the
+Event entry box manually. Yes, you may edit the Event entry box.
+
+Having now composed your event, you can select the "Add" button
+which will close the insert window and add the event to the left
+column of the Binding Window.
+
+The penultimate step is to appropriately change the skeletal code in
+the right column. Basically, just add parameters and supply the
+callback function name in place of "xxx". Finally, save the result by
+selecting the check button.  This is similar to the situation with the
+command already discussed.
+
+Elsewhere in this document I have used the term callback to mean the
+callback function that appears in the Python support module. At the
+binding level the 'real' callback function is a lambda function which
+invoked the callback function in the support module.
+
+The big thing here is that the 'real' callback is always passed a
+parameter, the event object, and so a lambda is needed to receive that
+object and invoke the Python callback passing any parameters to the
+callback function. Those parameters may or may not include the event
+object. The dummy lambda in the Bindings Window assumes just one
+parameter, the event object. This means that the lambda for passing
+the event object (with no user parameters) is:
+
+.. sourcecode:: python
+    
+    lambda e: foo_bar(e)
+
+or if passing user parameters:
+
+.. sourcecode:: python
+    
+    lambda e: foo_bar(e,5)
+
+Of course, if no parameters, not even the event object, is needed by
+the callback function the following forms may be used:
+
+.. sourcecode:: python
+
+   lambda e: foo_bar()
+
+or 
+
+.. sourcecode:: python
+
+   foo_bar
+
+.. _event:
+   
+The parameter e above is the event object which contains much
+information about the event. The event object has the following attributes
+(from the documentation found in Tkinter.py):
+
+.. sourcecode:: python
+
+    
+        serial - serial number of event
+        num - mouse button pressed (ButtonPress, ButtonRelease)
+        focus - whether the window has the focus (Enter, Leave)
+        height - height of the exposed window (Configure, Expose)
+        width - width of the exposed window (Configure, Expose)
+        keycode - keycode of the pressed key (KeyPress, KeyRelease)
+        state - state of the event as a number (ButtonPress, ButtonRelease,
+                                Enter, KeyPress, KeyRelease,
+                                Leave, Motion)
+        state - state as a string (Visibility)
+        time - when the event occurred
+        x - x-position of the mouse
+        y - y-position of the mouse
+        x_root - x-position of the mouse on the screen
+                 (ButtonPress, ButtonRelease, KeyPress, KeyRelease, Motion)
+        y_root - y-position of the mouse on the screen
+                 (ButtonPress, ButtonRelease, KeyPress, KeyRelease, Motion)
+        char - pressed character (KeyPress, KeyRelease)
+        send_event - see X/Windows documentation
+        keysym - keysym of the event as a string (KeyPress, KeyRelease)
+        keysym_num - keysym of the event as a number (KeyPress, KeyRelease)
+        type - type of the event as a number
+        widget - widget in which the event occurred
+        delta - delta of wheel movement (MouseWheel)
+
+
+A couple of points need mentioning. First, the Binding Window contains
+a lot of cruft below the event entries for the selected widget which I
+don't understand and can't use. It seems to be a listing default events for the
+binding hierarchy of the widgets alluded to above. I am toying with
+just removing it. In addition I have never done anything good with the
+buttons below the menubar except for the check button which saves the
+bindings, or the 'x' button which deletes an event binding. 
+
+The left listbox in the Binding Window has a popup menu which lets one
+modify the event under the mouse pointer.  For instance, it allows one
+to easily change the event <Button-3> to <Double-Button-3>.
+
+With version 4.8, Custom Widgets were introduced. Since PAGE knows
+nothing of those widgets including binding possibilities, the
+mechanism just described cannot be used to specified bindings for such
+widgets. You will have to do that in the support module.
+
+Some users prefer to set bindings in code in the support module rather
+than use the Binding Window. At other times it is desirable to add a
+binding during execution. Here is an example of adding a dinding.
+
+.. sourcecode:: python
+
+	# binding for Entry2 widget
+	_w1.Entry2.bind('<Button-3>', lambda e: menudemo.popup1(e, 2))
+
+If you need to remove a binding try:
+
+.. sourcecode:: python
+
+
+	# remove a binding for Entry2 widget
+	_w1.Entry2.bind('<Button-3>', 'break'))
+				
+Creating Bindings for Scrolled Widgets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The scrolled widgets are implemented as Python wrappers for underlying
+tk widgets such as text boxes, so in order to bind an action to the
+text box of a Scrolledtext widget, use the Bindings Window to bind the
+action to the Scrolledtext widget rather than the Text subwidget.
+
+.. _specifying_fonts:
+
+.. _defining_functions:
+
+Defining Callback Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you name a function in a menu, an event binding, command attribute,
+etc., that function is called a callback function and a Python
+implementation of that function is required before trying to execute
+the GUI in PAGE.
+
+Executing the GUI means executing the generated Python code within
+PAGE to demonstrate how the GUI will appear in the completed
+application.This is done by selecting the Run button on the Python
+Console or with the shortcut Control-R.  To satisfy requirements of
+the Python interpreter, Tkinter variables and callback functions have
+to be defined. These functions are to be located in the support
+module.  Skeleton functions will be satisfactory since at that state
+of development you really don't expect the application to usefully
+function.
+
+One path for the user is to do nothing, letting PAGE create a skeleton for
+you by just noticing that the a name is specified in a binding or a command
+attribute in the support module as described in :ref:`rework`.  This
+is the recommended approach as of version 4.2.  
+
+.. Previously, I did a makeover of the Visual Tcl function definition
+.. facility. While satisfyingly clever, I now have abandoned it for the
+.. simpler creation of skeletal functions. 
+
+.. Though deprecated, it is described below.
+
+.. comment the following Rozen 11-8-14
+.. If you wish to have a more complete function then go to the function
+.. list window which is usually open or can be made visible from the
+.. Window menu. To create a function hit add. Yet another window will
+.. appear filled with a dummy function, py:xxx. See below.
+.. 
+.. .. image:: function-editor.jpg
+.. 
+.. To get a skeleton function just change the 'xxx's to the name of your
+.. function and fill in the parameter list. If the function is to be a
+.. class method be sure to insert "self," including the comma as the
+.. first parameter even if you have no other
+.. parameters. Obviously, you
+.. can write as much of function here as you want.  For instance, I
+.. sometimes will include the statement sys.exit() in a quit function.
+.. 
+.. .. sourcecode:: python
+.. 
+..    def quit():
+..        sys.exit()
+..  , because when the event happens
+.. An aside:
+.. 
+.. Since Tcl will tolerate a procedure containing anything until it
+.. executed, PAGE will save your function as:
+.. 
+.. .. sourcecode:: python
+.. 
+..    ## Procedure:  py:wet
+.. 
+..    proc ::py:wet {} {
+..    def wet(self,) :
+..        pass
+..    }
+.. 
+.. That means that later you can come back to PAGE to modify the GUI and
+.. the functions that you saved will still be there! This ends the
+.. discussion of the deprecated function stuff.
+
+I usually just let PAGE generate the skeleton functions, run the
+resulting code to see what my window will look like and then do the
+rest of my programming in emacs. When PAGE stores the python modules,
+several layers of backup files are retained.  If I need to regress to
+one of them, I find that `Meld <http://meldmerge.org>`_ is a
+wonderful utility for managing the differences between versions.
+
+
+.. Previously, the automatically generated functions contained only a
+.. single "pass" statement. Unfortunately, that tells you little when you
+.. try executing the generated Python code in the Python Console.  So I
+.. preceded the "pass" statement with a print statement which prints the 
+.. function name when the function is called. I have found that to be
+.. helpful. 
+
+
+.. Special Widget Processing
+.. ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Viewing Callbacks
+~~~~~~~~~~~~~~~~~
+
+In release 4.14, a facility for listing and copying callback functions
+was added. This can be activated from the main menu - Window->Show All
+Callbacks - or from the Widget Menu, the context menu. The first will
+display in the Callback Window all callbacks defined for the GUI,
+while the latter displays only the callbacks related to the selected
+widget. A particular callback can be selected with the mouse or the
+search feature of the callback window.  Then the "Look up" button will
+find that callback in the Python Console; alternatively, hitting
+Button-3 in the callback window has the same result as selecting the
+"Look up" button. 
+
+If the Python console exists it is used for the "Look up". Otherwise,
+it is created and loaded from disk. Care needs to be exercised because
+the Python console may be differ from the disk version. Check the save
+warning at the bottom of the console.
+
+
+Specifying Fonts
+````````````````
+
+When manipulating most widgets in PAGE, the user can specify fonts to
+be used with that widget by means of the font field in the Attribute
+Editor. If one selects the ellipsis button - the small button with
+'...' - a font selection dialog opens and its use is straight forward. One
+may also add a font description in the entry field and that is where
+restricted to using Tk font specification formats which are
+exemplified below:
+
+.. sourcecode:: python
+
+   -adobe-courier-bold-r-*-*-20-*-*-*-*-*-*-*
+
+   {{deja Vu} 12 bold}
+
+   -family {DejaVu Sans} -size 12 -weight bold -slant roman -underline 0 -overstrike 0
+
+Some users need font sizes which are not included in the selection
+dialog. The user can go to the font entry field of the Attribute
+Editor and modify the -size value.  If the user expects to need such
+an exception often, he or she may add the custom sizes in the font tab of the
+preference window. 
+   
+Toplevel Widget
+```````````````
+
+A Toplevel widget is created when PAGE is invoked without
+parameters. The Toplevel widget is the main widget and the container
+for the widgets of the GUI design.  With version 7 which supports
+multiple toplevels additional Toplevel widgets can be added by
+selecting the toplevel button in the Widget Toolbar.  When an existing
+project is opened from the main menu File->Open the existing Toplevel
+widgets can be saved if modified and then replaced with the Toplevel
+widget of the opened project.
+
+Toplevel widgets don't really have a title property. It was added in
+Visual Tcl and the Attribute Editor originally displayed it as one of
+the geometry attributes. That didn't seem like a good place, so I moved
+it to the Attributes section.  The title is displayed at top of the
+window and previously was used to generate the class name use in the
+Python code. However the title can be an arbitrary
+string of Unicode characters, the alias will be used as the class
+name. An alias is automatically generated from the class name and, of
+course, may be changed in the Attribute Editor.
+
+Among the attributes listed for a toplevel widget is 'menu' which in
+PAGE allows one to easily create  a menubar at the top
+of the widget. Click on the attribute and follow the procedure below.
+
+.. _relative:
+
+Relative Placement
+``````````````````
+
+Following the paradigm I am familiar with from VB, PAGE uses the place
+window manager to fix location within the generated GUI.  Thanks to
+George Tellalov, who suggested using relative placement for widgets
+within the GUI thus allowing one to build stretchable GUI's.  They
+allow one to grab an edge or corner of the executing Python GUI and
+change its size and while maintaining relative positions and sizes of
+the internal widgets. This is the default behavior. Keep in mind that
+with relative placement, widgets may change size as the toplevel
+window is resized, but fonts do not change size.
+
+Relative or absolute placement can be selected in the Basics tab of
+the Preferences window.
+
+Since I don't think buttons or labels should change size in step with
+the change in size of the window, relative placement for buttons does
+not change the size of buttons but the relative placement is
+maintained. The unit of width with labels is characters, 
+width does not change with the size of the toplevel widget.
+
+Relative placement has been extended to the toplevel design widget.
+Two design modes are introduced for Relative and Absolute for
+PAGE. Relative mode is new and it allows you to see how the completed
+GUI will appear as the toplevel window is resized. Absolute mode is
+the previous behavior. There is a new button in main window which
+displays the current mode and when pressed will convert to the other
+mode. The design modes are governed by the following:
+
++ When the project top level is created the mode is determined by the
+  preferences.
+
++ When the project is saved the mode is determined by the preferences.
+
++ When the design mode is changed, the selected widget handles are
+  preserved.
+  
++ When the design mode is changed, multiple selections are lost. (I
+  haven't figured out a way to save them.)
+
++ You can change mode repeatedly, suffering only minor rounding
+  errors.
+
+That is, with relative mode in the preferences, the you get WYSIWYG at
+the PAGE design level. However, if sometimes, in the middle of a
+project design, a flash of inspiration comes and you need to resize
+the topmost widget to accommodate more or less space.  With the
+relative position in the designer, everything resizing or moving can
+throw off hours of work.
+This new behavior works best with newly placed widgets. However, with
+legacy projects problems may be encountered with widgets located at
+position (0,0).
+  
+
+When you add a widget in Relative mode, it means that if you stretch,
+compress, or diagonally reshape the toplevel widget, the widgets
+inside will move around and resize proportionately.
+
+The problem associated with relative placement occurs when widgets are
+placed inside of label frames.  To make room for the label, the widget
+is taller than the frame and leads to unexpected behavior especially when
+compared with simple frames as containers. The user would like to have
+resizing and motion relative to the outline of the frame rather than
+the origin of the widget.  I have hacked an adjustment to the relative
+placement of widgets which have label frames as parent widgets. It
+helps but it is not perfect. Suggestions are most welcome.
+
+Tkinter Variable Classes
+````````````````````````
+
+With several of the widgets using variables to set or reflect values,
+it is necessary to have linkage between tkinter variables and Python
+variables.  For instance, when one moves a slider of a scale in the
+GUI window, he wants the value to be reflected in a Python variable or
+conversely changing that variable should change the position of the
+slider. This is done by means of the Tkinter variable classes:
+BooleanVar, DoubleVar, IntVar, and StringVar.
+
+You need an instance of one of these classes. PAGE guesses the variable
+type which you may need. You can then use the get method in Python to
+determine the value of the variable in tk and use the set method to
+set the value of the tk variable.  There are examples below.  For more
+information see the `Tkinter Variable Class
+<http://effbot.org/tkinterbook/variable.htm>`_ on the effbot.org web
+page.
+
+
+For instance if you are using a TScale widget to be coupled with the
+tk variable variable "val", the following code is generated in the
+toplevel class:
+
+.. sourcecode:: python
+
+           self.val = tk.DoubleVar()
+
+
+				
+then you need to set the TScale attribute to "val".  The rule is that
+the Tkinter variable must exist before it the widget class is
+instantiated. It may appear in the toplevel class definition like:
+
+.. sourcecode:: python
+
+			self.TScale1.configure(variable=self.val)
+
+When val is changed with a statement like:
+
+.. sourcecode:: python
+
+   self.val.set(.7)
+
+in the toplevel class the TScale slider will move to that value.
+
+If the TScale is changed in the GUI, you can read the new value in the
+support module with a statement like:
+
+
+.. sourcecode:: python
+
+   _w1.val.get()
+
+PAGE tries to help out by generating an instance of the appropriate
+class variables. Again, this is skeletal code to help the generated
+Python code run from within the Python Console.
+
+One point to note: Several widgets such as message, buttons, and label
+can use textvariables to set the widget displayed on the widget. If
+the variable is created but unset its value is the null string. If the
+value is "", then the button has no text and you can't see that there
+is a message or label present.  For that reason there is a hack which
+initializes the textvariable to the value of the text option. That
+way the widget will appear with same text in GUI execution as in GUI
+design. Obviously, the textvarialble can be set in the support
+module. In fact, if you didn't expect to modify the textvariable in
+support module code, you would not have specified a textvariable.
+
+.. If you forget to specify the variable then try to execute, the code
+.. may give an error saying that a variable with a strange name is a
+.. problem because a funny name is put into the variable attribute in the
+.. Attribute Editor. PAGE tries to detect this situation and give a
+.. cryptic error message.
+
+For more discussion of Tkinter Variable Classes see `Tkinter 8.5 reference <https://infohost.nmt.edu/tcc/help/pubs/tkinter/web/control-variables.html>`_.
+
+.. _ttk widgets:
+
+Ttk Widgets
+```````````````
+There are some aspects of the ttk widget set that have presented me
+with some significant difficulties mainly due to "styles", it may
+be merely that I don't understand the ttk widgets well enough or to
+problems with their implementation and documentations.  I will try to
+explain my problems below. I would welcome any suggestions.
+
+
+Scrolled Widgets
+````````````````
+
+For some reason that I don't understand, the Tk folks have never seen
+fit to implement scrolled widgets such as a Scrolled Text
+widget. Rather, the user is left to deal with scrollbar widgets and
+attaching them to text or listboxes. I certainly don't want to fuss
+around with all the separate programming tasks required for a scrolled
+widget when building a GUI.
+
+Looking at the Tk man pages, I found that only canvas,
+entry, grid, listbox, spinbox, and text tk widgets appear to support
+scrollbars. PAGE now offers scrolled versions of those widgets based
+on the approach demonstated by Guilherme Polo in his Pyttk-samples
+package which shows how to build Scrolledtext and Scrolledtreeview
+widgets. Of course, I have included Polo's Scrolledtreeview widget. My
+version of a scrolled canvas widget is the Scrolledwindow widget
+described below.
+
+I was able to extend his package so that the scrolled widgets now
+support mouse wheel scrolling with the wheel scrolling in the y
+direction and shift-wheel scrolling in the x direction.  Y direction
+scrolling works in Linux, Windows, and OSX. However, X direction
+scrolling only works in Linux and Windows. I do not understand why it
+does not work in OSX and would welcome any insight.
+
+One can select a scrolled widget from the Widget Toolbar and place it
+in the GUI and PAGE will generate all of the Python code necessary to
+realize the scrolled widget. The scrolled widgets that I added are not
+named with an T because they are not official tk widgets ans are
+to be found in the Enhanced widgets section off the Widget Toolbar. 
+
+Although Polo implemented his code with ttk widgets, I have used his
+ideas to implement scrolled tk widgets as well. In fact, where
+possible I have used tk widgets in preference to ttk widgets. For
+instance, I have based only the Scrolledtreeview and Scrolledcombobox
+on ttk widgets. I am indebted to Polo for his ideas but he bears no
+responsibility for any errors I make interpreting his ideas.
+
+The scrolled widgets are compound widgets containing as-needed
+scrollbars and an elementary widget. As such, to set attributes or
+apply bindings, first select the elementary internal widget.
+
+When the scrolled widgets are placed into a container window, the
+image shown displays vertical scroll bars to facilitate
+identification. The best is that the appearance is similar to that
+which is shown when the GUI is executed because as implemented in the
+Python code the scroll bars appear only when required. I had a lot of
+trouble with background colors in the ttk::scrollbars used in the
+Python GUI. 
+
+These widgets are complex widgets, so to move or resize them, use
+Control with Button-1. The scrollbars are ttk::scrollbar widgets which
+appear only when needed, i. e., when an item extends beyond the
+allotted space.
+
+When inserting text inside a Scrolledtext widget, treat it like a text
+widget. For example, uses code like
+
+.. sourcecode:: python
+
+   obj = self.Scrolledtext1
+   obj.insert(END, "This is text to be inserted")
+
+When  cutting, or copying scrolled widgets, I use the widget tree for
+easily selecting the whole widget rather than just the interior
+widget.
+
+To change attributes of the widget being scrolled, it is necessary to
+select that widget from the Widget Tree and then make the desired
+changes in the Attribute Editor. For instance, to change the
+background color of a Scrolledtext widget, select the text widget
+indented under the Scrolledtext entry in the Widget Tree and change the
+background color in the Attribute Editor.
+
+The several scrolled widgets provide auto-scaling; that is when the
+widget is actually larger than the viewing area scrollbars are
+shown. However, there is no way for the user to change any attributes
+of the scrollbars. This primarily affects the background color which is
+the GUI background color which is set in the preferences.
+
+Scrolledlistbox
+~~~~~~~~~~~~~~~
+
+There s a slight problem with the ScrolledListBox in the way in which
+the size function is invoked due to a strangeness, which I do not
+understand, with multiple inheritance in Python. One would normally
+expect to
+get the value of size of a ScrolledListBox with the following statement:
+
+.. sourcecode:: python
+
+		size = w.Scrolledlistbox1.size()
+
+class inherits from two classes Autoscroll and Listbox. Both classes
+define the function "size" and the size that in invoked above is the
+one via Autoscroll.  I have been unable to find a way of define "size"
+in the ScrolledListBox class to be the one I want. So there are at
+least two way of determining the size of a ScrolledListBox in a
+support module. They are:
+
+.. sourcecode:: python
+
+	size = w.Scrolledlistbox1.size_()
+
+	or
+
+	size = tk.Listbox.size(w.Scrolledlistbox1)
+
+The first works because I have added the definition of the function
+"save\_" to the ScrolledListBox class.  I do not know why I cannot add
+a similar definition of "save".
+
+.. _scrolledwindow:
+
+Scrolledwindow
+~~~~~~~~~~~~~~
+
+This is my attempt to provide a scrolled canvas widget. The
+Scrolledwindow is a scrolled canvas with a single frame located in at
+position (0,0) which can contain Tk widgets. Unfortunately, PAGE does
+not give you much help in placing the widgets. And I have not been
+able to get scrolling action when using the place geometry manager
+with the widgets. 
+
+I have used this widget for displaying photographs as part of a
+photography library. It worked very well but I had to load the widgets
+by adding Python code to the support module.
+
+I think that this best
+explained by example. I have included a simplified example to show
+how I loaded the scrolledwindow and connected it to the
+scrollbars. In the GUI module the following code is generated by PAGE:
+
+.. sourcecode:: python
+
+        self.Scrolledwindow1 = ScrolledWindow(top)
+        self.Scrolledwindow1.place(relx=0.217, rely=0.311, relheight=0.522
+                , relwidth=0.478)
+        self.Scrolledwindow1.configure(background="#5eff8f")
+        self.Scrolledwindow1.configure(borderwidth="2")
+        self.Scrolledwindow1.configure(highlightbackground="wheat")
+        self.Scrolledwindow1.configure(relief="groove")
+        self.Scrolledwindow1.configure(selectbackground="#ddc8a1")
+        self.color = self.Scrolledwindow1.cget("background")
+        self.Scrolledwindow1_f = tk.Frame(self.Scrolledwindow1,
+                            background=self.color)
+        self.Scrolledwindow1.create_window(0, 0, anchor='nw',
+                                           window=self.Scrolledwindow1_f)
+
+The frame, self.Scrolledwindow1_f, is a container for tk widgets. The
+following is code for inserting an array of buttons into that frame:
+
+.. sourcecode:: python
+
+    def init(top, gui, *args, **kwargs):
+        global w, top_level, root
+        w = gui
+        top_level = top
+        root = top
+        load_canvas()
+		
+    def load_canvas():    
+        inner_frame = w.Scrolledwindow1_f  # Rename for convenience.
+        button = {}
+        for i in range(12):
+            button[i] = tk.Button(inner_frame, text='VButton'+str(i))
+            button[i].grid(sticky='w')
+        button[0].wait_visibility()      # Wait for widget to appear.
+        bbox = inner_frame.bbox()        # Geometry of the frame.
+        w.Scrolledwindow1.configure(scrollregion=bbox)    # Configure scrolling.
+
+				
+
+Scrolledtreeview
+~~~~~~~~~~~~~~~~
+
+There is a bug in Tcl/Tk which prevents the modification of the cursor
+in contradiction of the ttk:treeview widget.
+
+Ttk Notebook and PNotebook
+`````````````````````````` 
+
+If you select, place, and resize a TNotebook in
+your GUI window it will display a notebook with two pages and may look like:
+
+.. image:: notebook.jpg
+
+
+To change the attributes of the TNotebook, including the number pages
+(tabs), select the notebook editor either from the context menu,
+Widget --> Edit tabs...) or by selecting the ellipses in the page
+attribute in the Attribute Editor. The context menu pops up when the
+notebook menu is selected with Button-3 in the Widget Tree or the GUI
+toplevel. 
+
+.. image:: edit-tabs.png
+
+Here you can do all sorts of interesting things like add tabs, change
+the order of the tabs, or select the tab you want to activate for
+adding widgets . If you select the menubar Item->Add, it will create a
+new page to the notebook, in the above example, as the rightmost tab.
+The Move menu as well as the up and down buttons will change the order
+of the pages.  The move operation will move the selected page one
+position up or down.  The move is circular in the sense that moving
+the bottom item down will move it to the top, etc..
+
+Finally, the tab editor allows one to put an image on the tab as
+shown.  The compound option allows the image to be placed in the
+different position of the tab relative to the text.  The relationship
+between an image and the text is governed by the compound option which
+has a default value of "none", which displays the image but no
+text. While it is possible to enter image object names into the image
+entry box, it is a bad idea to do so. I have made the box orange as a
+warning.
+
+Another way of navigating the pages in the tab editor is the pages
+attribute in the Attribute Editor. The ellipse button invoked the tab
+editor opens the tab editor.
+
+
+With version 4.10, there is a variation of the Ttk Notebook called the
+PNotebook which appears below:
+
+.. image:: pnotebook.png
+
+The x's at the right of the tabs are icons which will cause the tab
+to close when selected with Button-1.  Note that this icon uses the
+single image allowed in a tab and places it to the right.  So, the tab
+editor does not have an image field to modify. It appears like:
+
+.. image:: edit-pnotebook.jpg
+
+When the support module is created for a GUI containing a PNotebook,
+three funtions are added - "_button_press", "_button_release", and
+"_mouse_over". Those names should be distinct from names that the user
+might use in his application code. They were give the somewhat unusual
+leading "_" character to facilitate the distinction.
+
+.. _nbresize:
+
+When it comes to resizing notebooks, it is necessary to recognize that
+not all of the components can be resized. Consider the following
+images.
+
+.. image:: nb-selected.png
+
+Here the notebook widget is selected. Its geometry may be changed by dragging a
+handle or with the arrow keys.		   
+		   
+.. image:: nb-tab-sel.png
+
+The widget selected here is an internal frame of the notebook tab and
+its geometry may not be changed. And PAGE will not alter it.		   
+		   
+.. image:: Internal-widget.png
+
+The selection is that of an internal widget in one of the notebook
+tabs. Of course, it's geometry may be altered.		   
+		   
+I spent a great effort trying to get tab colors right based on
+variations in the preferred GUI colors (as specified in the preference
+window) and gave up. Instead I decided on the following: the colors of
+the tab of the visible are the preferred colors, the background colors of
+other tabs are shades of gray and the foreground colors of those tabs
+is black. Fortunately, those colors can be changed by inserting code
+of following ilk in the support module:
+
+.. sourcecode:: python
+
+    style.map('TNotebook.Tab',
+              background=[('selected', 'gray35'), ('active', 'gray75'),
+                          ('!active', 'gray89')],
+              foreground=[('selected', 'white'), ('active', 'black'),
+                          ('!active', 'black')])
+
+In the above code
+
++ 'selected' refers to the visible page,
++ 'active' refers a non selected tab that is under the mouse, and
++ '!active' refers to any non selected not under the mouse.
+
+Those names are ttk states of the TNotebook widgets described in the
+ttk::widget man page. Exactly how the various states apply to
+TNotebooks is very confusing; ttk documentation strikes again.
+
+The appearance of the "!active" close image in PNotebook tabs is
+serviceable but not perfect in the case of a dark background.  But I
+think it is the best that ttk allows.
+			  
+Ttk Panedwindow
+```````````````
+
+The TPanedwindow can be added to the GUI by selecting it from the
+Widget Toolbar and then Button-1 in the container.  There are two
+entries for the TPainedwindow, one for vertical separators and another
+for horizontal, in the Widget Toolbar.  It can be moved around by
+Control-Button-1 and resized by dragging one of the handles. It is
+sometimes a bit difficult grabbing a handle unless you select the
+TPanedwindow widget from the Widget Tree window. Each pane of the
+paned window contains a TLableframe which fills the pane.  Using the
+label frame was the only way I could find to actually get the a
+TPanedwindow to appear on my screen. Again, I had few examples to work
+from. Documentation of the ttk::panedwindow is very poor, even worse
+than most other aspects of TTk. 
+
+The paned window is configured by invoking Widget->Edit Panes menu
+item bringing up the following editor.
+
+.. image:: pane-editor.png
+
+This editor allows users to move among the panes, change the text in
+the label frame, and to fix the relative weights used when resizing
+the widget.  Changes made in the editor are applied to the GUI
+immediately. Selecting the check button merely closes the editor.
+
+One can select the TLableframe defining the pane and drag the edge of
+it to change the sash position. In other words, select a pane with
+Button-1 and drag one of the interior handles along the sash you want
+to modify; that will move the sash between the selected pane and the
+adjacent pane. Fine adjustment can be made using the arrow keys.
+
+The Edit panes window allows one to add additional panes to the window
+via the Item menu. The implementation of paned windows sets the
+initial size of the paned window to 200x200 pixels and the first pane
+size to 75 pixels.  Adding a new pane adds one at the end (the right
+end of a horizontal TPanedwindow or the bottom of a vertical
+TPanedwindow, in either case, taking space from prior end pane.
+Fortunately you can resize the whole TPanedwindow which changes the
+size of the end pane. Then resize the others by changing the sash
+positions as described above.
+
+Users may also forget, the term used in the tk documentation, a pane
+which removes it from the widget. There is no remember command. 
+
+The weight option describes the size of the pane in the stacking
+dimension, relative to the other panes. For example, for paned windows
+where the stacking is vertical, if pane 0 has weight=1 and pane 1 has
+weight=3, initially the first pane will have 1/4 of the height and the
+second pane will have 3/4. That ration will persist as the widget is
+resized, assuming of course, relative placement.
+
+The editor, by including the Move menu and the little up and down
+arrows allows one can move the a pane to a new position. Again, the
+move operation is circular.
+
+To move a paned window select the whole window then a spot in a sash
+between panes and then you can drag the whole paned window.
+
+.. I am still having a problem with resizing TPanedwindows. If you select
+.. the paned window, by say selecting it in the Widget Tree window, move
+.. the paned window, and then select and move one of the handles, the
+.. TPanedwindow will move rather than resize. However, if you again
+.. select a handle it will resize the window. Obviously, something has
+.. been set but not reset.  As soon as I figure out how to correct the
+.. problem I will release a new version.
+
+Ttk Treeview
+````````````
+
+It was  difficult to provide reasonably good support for the
+Treeview widget. I actually do not support the ttk::treeview widget,
+rather I have gone directly to the Scrolledtreeview which embeds the
+ttk::treeview widget in a ttk::frame with auto-scrolling scrollbars.
+
+What I have been able to do is to support the placement of the widget
+in a window with a default of one column in addition to the tree
+column both columns are stretchable. By invoking the column editor you
+may change many of the characteristics of the widget such as the
+column size and heading, as well as the number of columns. It also
+allows one to reorder the columns.  Note that the column that contains
+the tree has the index of "#0" and must remain the first (left-most)
+column.  The column editor is invoked with Button-3 in the widget
+within the Widget Tree and going to Widget->Edit Columns ... as shown
+below:
+
+.. image:: column-editor.png
+
+If the widget were created or a column is added with the configuration
+option "stretch" is set to 0 (not stretchable), then when the
+resulting GUI is stretched then the column width will not change.  The
+enclosing widget with the scrollbars will either have a blank area to
+the right of the last column if the window is enlarged or the last
+column will not fully show.  To get the more desirable behavior, go
+into the Column Editor in the Widget menu and make at least one of the
+columns stretchable.
+
+
+Entry
+`````
+
+This widget is mostly like the simple widgets except that it supports
+validation with three special options - validate, validatecommand, and
+invalidcommand. See :ref:`validation commands <entrycmd>` for a
+description of validate command specifications.  Note that the option
+"validate" needs to be set because it defaults to "none".
+
+Ttk Entry
+`````````
+
+While I do support the ttk entry widget, I don't see any reason to
+recommend using it because I am unable to change the widgets font and
+I don't like being stuck with the TkDefaultFont. Strange to say the
+ttk Combobox, below, is rumored to be based on the TEntry widget and I
+am able to manipulate the font size using the style facility.
+
+.. _combo:
+
+Ttk Combobox
+````````````
+
+The combobox requires a list of selectable values to display in the
+drop-down listbox.  These are easily specified from the Set Values
+entry of the Widget menu. When invoked from the menu a scrolled text
+box appears and the values are specified by entering them one per line
+in the text box and then selecting the check mark. Each line entered
+is considered to be a string constant and will be enclosed in quotes
+in the generate Python code. If you want values to include Python
+variable then you should set the values in the support function. This
+is a change from the previous behavior. Note that the window is a
+text box and so on can use control-x, control-c, and control-v for
+cut, copy, and paste.
+
+
+.. The user should
+.. include strings as they should appear in the Python code. That means
+.. if they are string literals, then they should be enclosed in quotes as
+.. shown in the example below. If the quoting is not present it is
+.. assumed that they are variables. I do not want to get into the morass
+.. of entry parsing literal strings.
+
+.. image:: SetValues.png
+
+Values can also be set in the support module using
+code like:
+
+.. sourcecode:: python
+
+	   w.TCombobox1['values'] = ('USA', 'Canada', 'Australia')
+
+
+My style problem with the TCombobox is that while I can use the style
+mechanism to change the font of the entry field in the combobox I
+have not found a way to change the font of the drop down area
+containing the values. In addition, I have not found a mechanism for
+changing the values in the drop down list after initialization.
+
+Note that the TCombobox widget incorporates an automatic height
+scrollbar. Vertical scrolling should automatically enable once you
+have sufficient values to choose between.
+
+
+Radiobuttons
+````````````
+
+TRadiobuttons and Radiobuttons act pretty much the same. One specifies
+several of the widgets which are linked by specifying the same Tkinter
+variable for all. It is necessary to specify a different value for
+each radiobutton. One can also specify an initial value for the group
+by setting the initial value of the Tkinter variable in the support
+routine.  For TRadiobuttons the values and variables can be specified
+with the set method of the from the Widget menu as well as in the
+Attribute editor.
+
+According to Tcl/Tk documentation, Radiobuttons have a default
+variable which is "selectedButton" but I have not gotten that to work
+in Tkinter.  So I recommend specifying your own variable in the
+Attribute Editor and avoiding "selectedButton". I generate Python that
+will not fail with a syntax error if you do not specify a variable but
+it will not truly work. I think that the problem is in the
+implementation of tkinter.
+
+The TRadiobutton is even worse; it cannot work with the default
+variable which is "::selectedButton" because that is not a legal
+Python identifier. So I fudge it to generate legal Python, but do not
+expect it to work the same a specified variable.
+
+In the supported modules, the radio button variable is associated with
+a Tkinter Variable and its value can reasonably be either an integer
+or a string. I decide to implement the variable as a StringVar if the
+value is enclosed with the single quote character, "'", otherwise it
+is deemed to be an integer and is implemented as an IntVar. Note that
+double quotes do not work because they do not survive saving the
+project file. Obviously, all values specified for the variable must be
+either integers or strings and of the same type.
+
+.. _interact:
+
+Strangeness with Text and Variables 
+```````````````````````````````````
+.. A number of widgets have the option "-textvariable" which can specify
+.. a variable, the value of which is the text string displayed by the
+.. widget. If you change the value of the variable the displayed text of
+.. the widget follows the change. In Tk when the variable is specified,
+.. is "unset", i. e., it has no value so the widget appears to
+.. disappear. As implemented in PAGE, when a variable name is entered in
+.. the Attribute Editor it is "set" to the current setting of the text
+.. option in the Attribute Editor. This makes the widget visible at the
+.. PAGE level. However, the user is unable to change the text at the PAGE
+.. level.
+
+With version 7, when a textvariable is specified, the corresponding
+widget displays the text specified in the text attribute, and in
+addition it is now possible to change the text attribute after the
+textvariable has been specified. However, there is an artifact that
+may be present. The variable displayed in as the textvariable
+attribute may have "::vTcl::" prepended. I have not been able to
+remove that artifact while still being able to change text. So just
+ignore it, live with it, and hope I experience a revelation.
+
+.. I was surprised to discover a couple of strange things about the way
+.. text is handled with tk widgets.  There are several ttk widgets,
+.. among them TButton, TMenubutton, TLabel, TCheckbuttom, and
+.. Tradiobutton, which have both properties of "-text" and
+.. "-variable". Using the Attribute Editor you can specify the value of
+.. the Text to be displayed in PAGE when you are laying out the
+.. GUI. However, if you then specify the variable attribute, the text
+.. attribute is changed to the zero length string.  I guess that that is
+.. because the variable you named is undefined.  But also the width of
+.. the field containing the text may be set to zero length. So, for
+.. instance, TLables appear to have zero width unless you have changed
+.. the width prior to specifying the variable.  A TButton merely displays
+.. blank text and TRadiobuttons squeezes down to just the
+.. button. TCheckbuttons behaves similarly to TRadiobuttons.
+
+.. When you generate the Python code the widgets will again appear to
+.. have no text and maybe have no width unless you have set a non blank
+.. value into the Tkinter variable. Tk widgets including Button, Message,
+.. Label, Checkbutton, and Radiobutton behave much the same way.
+
+Label
+`````  
+
+Label widgets also treat text in an unexpected way.  The justify
+attribute applies how multiple lines of text are aligned relative to
+each other, it does not set how text lines are placed relative to the
+Label widget boundaries.  Use the anchor attribute to specify if the
+text block is up against the left of the widget (anchor 'e') or the
+right (anchor 'w').
+
+ 
+Listbox
+```````
+
+The Listbox widget has the option "listvariable" which one would expect to
+behave exactly like one of the Tkinter variable classes.  However, the Tcl
+documentation specifies that the listvariable must contain a list of
+values to be displayed in the listbox and the possible Tkinter
+variable classes are BooleanVar, StringVar, IntVar, and DoubleVar.  By
+experimentation I have found that by specifying the var to be
+StringVar and setting its value to a tuple of strings will cause each
+member of the tuple to appear as an entry in the listbox.  I am rather
+surprised at this but glad to find something that works.
+
+The following code 
+
+.. sourcecode:: python 
+
+    def set_Tk_var():
+        global rrr
+        rrr = StringVar()
+        rrr.set(('a','b','c','d','e'))
+
+
+
+results in a scrolled list box looking like:
+
+.. image:: Scrolled_List_Box.png
+
+Spinbox
+```````
+
+The Spinbox widget has the option values which contains a list of
+values presented in the widget as the arrows manipulated.  They are
+set using the Widget menu item "Set Values".  When invoked from the
+menu a scrolled text box appears and the values are specified by
+entering them one per line in the text box and then selecting the
+check mark.
+
+.. _scale:
+
+Scale and TScale
+````````````````
+
+Tk does strange things when one tries to modify the narrow dimension
+of a scale widget (the height of a horizontal scale or the width of a
+vertical one).  So PAGE does not allow one to modify the narrow
+dimension during the design phase and restricts the Relative Placement
+in the Python code to prevent changes in the narrow dimension.
+
+As usual the command attribute specifies the callback function invoked
+when the widget is selected. Unlike other widgets, the callback
+function is invoked whenever the scale's value is changed via a widget
+command. So if you select the slider and drag it the callback will be
+invoked numerous times. When the callback is invoked the current value
+is passed as the first argument. If you want to pass additional
+arguments then you should use a lambda function like:
+
+.. sourcecode:: python
+
+		lambda v: foo(v, 3)
+
+where v is the current value of the slider.
+
+This is similar to bind statements causing the passing of event objects.
+
+TSeparator
+``````````
+The TSeparator widget when selected presents only three handles; one
+at each end and one in the middle. The handles at the ends change the
+length of the separator and the one in the middle moves the separator. 
+
+I recommend investigating the trick by Greg Walters at
+http://thedesignatedgeek.xyz/python/page/2018/06/04/How-To-Page-Separators.html.
+
+
+
+Sizegrip
+````````
+
+Support for the ttk::sizegrip widget was included in Version 4.0.
+Merely select the widget from the Widget Toolbar and drop it anywhere
+within the Toplevel frame but not on top of another widget; it will
+bounce to the lower right corner.  Were you to drop it on say a
+notebook widget, a weird result would occur like landing in the wrong
+place but doing the right thing.
+
+I had difficulties with using Sizegrip with PAGE windows.  It works
+fine with the Python Console and the Menu Editor, but I never got a
+truly satisfactory result with Widget Tree or or the Widget Toolbar.
+I left it with the Widget Toolbar but not with the Widget tree. To be
+revisited.
+
+Custom Widgets
+``````````````
+
+In writing a photo manager, I needed a variation of a scrolled canvas
+to display photos.  I could not find a general purpose candidate for a
+scrolled canvas widget, but a found several variations on the web that
+might work. So I implemented support of user designed Custom widgets
+that can be manipulate in PAGE but requires the user to supply the
+Python implementation. So if I have left something out and you can
+conjure a tkinter implementation of it, PAGE can handle it.
+
+PAGE shows a Custom widget as a Text widget with the caption "Custom
+widget" and which can be placed and resized like any other
+widget. However since the widget has not been defined within PAGE, it
+is meaningless to talk about modifying attributes in the Attribute
+Editor except "variant" which is new in 4.15 and described below. All other
+attributes must be handled in the widget definition code.  The
+generated Python refers to it as a class defined in the support
+module.  To allow execution of the GUI before the support module is
+completed, there is included in the support module the line:
+
+.. sourcecode:: python
+
+   Custom = Frame
+
+
+The user then inserts his code for the custom widgets as a class with
+the <class_name> of his choosing and follows that code with the line:
+
+.. sourcecode:: python
+   
+   Custom = <class_name>
+
+This is the magic that links the widget that you placed in the GUI
+with the implementing class code in the support modules. See
+:ref:`custom_example` example.
+
+Of course, Python implementation of the custom widget may be in a
+Separate Python module which can be imported into the support module.
+
+The support of  Custom Widgets has been extended
+two ways. First it is now possible to have more than one custom widget
+in a GUI.
+
+And second, it is also possible to have more than one kind of custom
+widget in the same GUI.
+The names of the Custom widgets are "Custom" followed with a suffix
+which I call a variant. The variant is chosen by the user from the
+only attribute in the Attribute Editor. Each variation is implemented
+by a user-supplied Python class.
+The Custom widgets names are globally known across all the toplevels
+of the GUI.
+
+The variant attribute creates a separate name to be
+used in the GUI module and tied to a separate Python widget
+implementation. If the attribute is given a value (a string of
+character legal in a Python identifier) then that
+value is appended to the name 'Custom' and that enlarged name is used
+as the class name in generating the Python code. If the variant
+attribute is left blank, the class name is 'Custom' as before. For
+instance, if the widget 'Custom1' in project 'd' is given the variant
+'p' and the widget 'Custom2' is given the variant 'q', the following
+lines are generated in the GUI module, 'd.py':
+
+.. sourcecode:: python
+
+    self.Custom1 = d_support.Customp(top)
+    self.Custom1.place(relx=0.35, rely=0.24, relheight=0.16, relwidth=0.21)
+
+    self.Custom2 = d_support.Customq(top)
+    self.Custom2.place(relx=0.42, rely=0.62, relheight=0.16, relwidth=0.21)
+			
+and the following is generated in the support module 'd_support.py':
+
+.. sourcecode:: python
+
+	Customp = Frame
+
+	Customq = Frame				
+
+The names "Customp" and "Customq" are changed by the user to those of
+the custom widget classes that he or she wishes to use and for which
+the user supplies Python implementations. Thus one has two different
+custom widgets in the GUI.  Obviously, the number of custom widgets is
+not limited to two.
+
+Think of it as a matter of names. In the code snippets above, Customp
+is the name, or synonym, of a Class which is defined in the support
+module, Custom1 is the name of the object or instance created by the
+execution of the class Customp. If one wishes to operate on the
+instance Customp in a toplevel window, say toplevel 1, the instance is
+referred to in the support module as _w1.Custom1.
+
+In the support module the line:
+
+.. sourcecode:: python
+
+	Customp = Frame
+
+renames the class to Frame, so that when one generates the GUI module
+and the support module you can execute the GUI module and the Customp
+widget is a Frame. Instantiating a "Customp" thus become the
+substantiation of a Frame class. When you get down to the brass tacks of
+writing the "real" support module to use your own "Homegrown" widget
+you can replace the above line of code or follow it with:
+
+.. sourcecode:: python
+
+	Customp = Homegrown
+
+Having both lines of code is OK, it amounts to twice assigning a name
+to Customp and the last one takes. Just make sure that last line
+follows the one with Frame. The assignments are performed when the
+support module is imported which occurs before the class Customp is
+instantiated so the intended class definition, Homegrown, is used.
+
+I urge you to look carefully at the :ref:`scrolledlistbox` example to
+see a great example of using Custom widgets written by Greg
+Walters. There is an extensive README also written by Greg
+Walters. This example has one custom widget and several other PAGE
+widgets.
+
+.. _generate:
+
+Canvas
+``````
+
+As stated on `effbot site <https://effbot.org>`_ the
+Canvas widget provides structured graphics facilities for
+Tkinter. This is a highly versatile widget which can be used to draw
+graphs and plots, create graphics editors, and implement various kinds
+of custom widgets. One can also insert Tkwidgets into a canvas
+including scrollbars. The canvas is a general purpose widget, which is
+typically used to display and edit graphs and other drawings.  Another
+common use for this widget is to implement various kinds of custom
+widgets. For example, you can use a canvas as a completion bar, by
+drawing and updating a rectangle on the canvas.
+
+PAGE support for this widget is somewhat 
+limited. I claim little support for manipulating the interior of the widget.
+One can do most things with the Canvas widget that can be done with
+other widgets. The user can place, move, resize, etc.. Since the
+Canvas widget is a container widget, any of the PAGE supported widgets
+can be placed inside a Canvas widget; however, PAGE does not help yoou
+do that.
+
+A Canvas widget has a lot of capabilities which PAGE does not support
+such as drawing geometric shapes - such as lines, rectangles, circles,
+ellipses, and arcs - adding text, or drawing with a mouse, or adding
+images. Bindings to created elements is possible but are not supported by
+the bindings editor. All of this stuff
+must be manually added to the support module using tkinter
+functions. To really support these capabilities would require writing a
+entire GUI based graphical editing program as a subsystem in PAGE.
+
+The one thing that PAGE does provide is the :ref:`scrolledwindow`
+widget which is a canvas with a window item at the upper left corner.
+
+Generating, Inspecting, and Running the Python GUI
+``````````````````````````````````````````````````
+.. _saving:
+
+Once the GUI has been defined, the next step is to generate the Python
+modules.
+
+Creating and Saving Code Modules
+````````````````````````````````
+
+This section discusses the creation and saving of the GUI module and
+the support module. I want to make saving simple and intuitive while
+reducing the probability of inadvertently overwriting hard to
+reproduce code, particularly in the support module.  At the same time
+I did not want to bombard the user with "Are you sure ..."
+dialogues. These goals are somewhat contradictory. I would appreciate
+comments on this subject.  I also want to ensure that GUI modules and
+the project or tcl file are in sync. To do that I will save the tcl
+file only when the user chooses to save the generated GUI module with
+the Save button in the Python console. Note:
+selecting the Run button implies the saving of the GUI module.  
+
+
+When one chooses to generate the GUI module (Control-P or the Gen
+Python submenu):
+
+
++ The GUI is transformed into a Python module called the GUI module
+  and displayed in the :ref:`Python Console` but is not automatically
+  saved. This is to allow the user to peruse the code before
+  committing it to storage.  The user may even change the code since
+  the Python Console code window is a Tk text widget with some
+  editing capability but is not a developed IDE. 
+
+..  
+  
++ From the Python Console, the user can  select the Save button and
+  the GUI module will be saved if "new" or changed.  Repeatedly
+  selecting the Save button without changing the code will not result
+  in additional actual saves. The constructed GUI is transformed into
+  a Tcl file and saved if the GUI has changed in the current session. 
+
+..  
+
++ From the Python Console, the user can select the Run button which
+  provides the same function as the Save button but also attempts to
+  execute the GUI module, if there is an existing support module. 
+
+
+
+When one chooses to generate the Support module (Control-U):
+
++ The constructed GUI is transformed into a Tcl file and saved if the
+  GUI has changed in the current session. 
+
++ If there is no existing support module, then one is generated and
+  displayed in a Python Console. 
+
++ If there is an existing support module, action is a bit more
+  elaborate. First, the existing support module is analyzed to see
+  what Tkinter variable, functions, etc. are defined in the existing
+  module and compared with those which would be required in the
+  support module. Next, the user is given the choice of one of the
+  following: 
+
+        + use the existing support module, thereby preserving you hand written code,   
+
+        + generate a new support module, 
+
+        + update the existing support module to include the additional
+		  Tkinter variable and skeleton functions,
+
+	    + cancel the whole operation.
+
+
++ From the Python Console, the user can select the Save button and the
+  support module will be saved if “new” or "changed". 
+
++ From the Python Console, the user can select the Run button which
+  does not save the contents of the module attempts to
+  execute the GUI module and the support module from previously saved
+  files. 
+
++ As stated above the project or tcl file is not saved.  
+
+
+.. Generating the Python Modules
+.. `````````````````````````````
+.. 
+.. Once the GUI has been defined, the next step is to generate the Python
+.. code which will realize the GUI.  This is done from the Gen_Python
+.. submenu of the main menu.  This will generate hopefully executable
+.. Python modules and display them in Python consoles. 
+.. Beginning with version 4.2, the Gen_Python submenu is used to generate
+.. two Python modules, the GUI module <name>.py and support module
+.. <name_support>.py, as discussed in the section on :ref:`rework`.  The
+.. intention is that all or almost all of the algorithmic code of the
+.. application will be in the support module and the code for building
+.. the GUI will be in the GUI module. PAGE generates a complete and
+.. hopefully working GUI module and a mere skeleton of the support module
+.. with just enough code to allow the execution of the GUI module.
+.. 
+.. What happens on execution is that the GUI class will
+.. be instantiated which means that the GUI will appear on the screen and
+.. then control will pass to the "init" function in the support module
+.. where the necessary code is written to support the function desired
+.. with the GUI, i.e., the application.  So the workflow envisioned is:
+.. 
+.. + One will initially use page to generate the GUI module and a
+..   skeletal support module.
+.. 
+.. + The user will then iterate modification of design and execution of
+..   the GUI module until it contains the desired widgets with PAGE
+..   generating both the GUI and the support module at each step.
+.. 
+.. + At that point, attention shifts to adding to the support module the
+..   code to actually implement the application. At that point, the PAGE
+..   user does not have PAGE regenerate the support module because that
+..   would lose his hand written code. 
+.. 
+.. + At some point in the development of the application, the user is
+..   likely to want modifications to the GUI. Make them but generate only
+..   the GUI module and make manual changes to the support module changes
+..   dictated by the GUI changes.  Mostly those changes will be to add to
+..   the support module new functions for callbacks or new Tkinter variables,
+..   etc..  A recent feature of PAGE will allow the user to update the
+..   support module, meaning that new skeleton functions and Tkinter variables
+..   will be added to the support module but no code will be
+..   removed. Then iterate this last step until one is finished with the
+..   application.
+.. 
+.. 
+.. Generation of the modules is accomplished by selecting
+.. Gen_Python->Generate GUI Module from the main menu. When selected, a
+.. Python Console will open and display the generated module.  Similarly,
+.. Gen_Python->Generate Support Module will open a different Python
+.. Console displaying the support module.  Too keep the project file in
+.. sync with the GUI file, the project file is saved when the GUI file is
+.. generated. 
+.. 
+.. Similarly, when you select Generate Support Module from the menu, a
+.. Python Console will appear, filled with the generated code for the
+.. supporting module named "<name>_support.py".  Note: The support module
+.. is generated by analyzing the saved GUI module. That means that the
+.. GUI module must be saved before the corresponding support module can be
+.. generated.  This file will contain skeleton functions and Tkinter
+.. variables needed.  This file will contain the principal code for the
+.. application. This, ideally, is generated automatically once per
+.. application. Of course, generating the support module there is the
+.. Update option discussed above.
+
+It is important that the support file is not automatically saved when
+run is invoked.  I don't want PAGE to inadvertently trash your
+handwritten application code.  The Python Console has a label which
+will indicate when the code window has been modified. That flag is
+turned on when any key is released over the window and that can indicate
+changes which may not actually change the text, i. e., a false positive.
+
+PAGE does not utilize tab characters when saving files. With respect
+to the ongoing controversy between tabs and spaces, PAGE is on the
+side of spaces.  For this reason PAGE expands tabs when doing a save
+from a Python Console.
+
+
+Inspecting the Generated Python Modules
+```````````````````````````````````````
+Often the user will want to look at the code that exists for a
+project. To do that, execute page with the project name or open the
+project and the select Gen_Python->Load Python Consoles. This will
+open two Python Consoles; one with the GUI module and the other with
+the support module. The loading of the consoles is from appropriate
+modules saved to disk. If a Python Console exists with either the GUI
+or support module, it will not be overwritten. If one or the other has
+not been saved, then nothing is done with the corresponding Python Console.
+
+My guess that this is most interesting when the user has modified the
+GUI and generated a new GUI module and wants to see what any existing
+support module looks like.  Again, in this situation, the new GUI code
+is not automatically saved.
+
+.. _execute:
+
+Executing the Python Modules
+````````````````````````````
+
+To see what the GUI looks like, the user can run or execute the GUI
+module. That can occur in two contexts, one is to execute the code
+from one of the Python Consoles and the other is to load the modules
+into an IDE and carry on development from there.  For execution within
+PAGE there has to be a Python Console; the user can generate either
+the GUI or the support module or load the project into the consoles
+from the Gen_Python submenu.
+
+To execute the GUI, select the Run button in a Python Console or using
+the shortcut Control-R when the cursor is over a Python
+Console. Another requirement is that an appropriate python command be
+specified as a preference. In the case of running PAGE under Linux a
+command such as "python3" works; in the case of running
+under Windows 10, one needs to specify the full path of the Python
+module such as
+C:\\Users\\rozen\\AppData\\Local\\Microsoft\\WndowsApps\\python3.exe. This is
+the python command that I am using.
+
+.. The generated GUI module is written in such a way that it will run
+.. stand alone as a script provided that all the necessary stuff is
+.. present. For instance, many of the widgets will have references to
+.. command functions and callbacks that need to be present at least in
+.. skeletal form for the generated Python to run stand alone. They may
+.. also reference Tkinter variable classes which must be defined for the
+.. Python to execute. That code will be included in the support module
+.. along with the code to link the GUI module and the support module.
+.. This means that one can expect the generated module to execute in the
+.. sense that the GUI will appear.
+
+Let me discuss the skeletal functions first. Function references may
+be referenced in several ways. If the function name is given the
+skeletal function will be created in the support module. An example
+would be to specify the command attribute in PAGE as "george". In that
+case, the skeletal support function "george" would be created in the
+support module.  
+If another module were specified as in "app.george"
+PAGE would not create a skeleton function at all; you are on your own to
+create and import the "app" module. From this you can see the need to
+create the support module before trying to execute the GUI module.
+
+Similarly, Tkinter variable classes are defined or the GUI class or in
+the support module depending on the presence or absence of "self." at
+the beginning of the specification.  If specified in the support
+module, code is included to insure that the class is created before
+the GUI execution references the class. 
+
+Because the use of "self." in specifying functions and Tkinter variables
+will require use code to be added to the GUI module, I avoid them in
+my usage of PAGE.  Such specifications work against the benefits of
+the rework facilities.
+
+I frequently execute the GUI module to see how the Python version of GUI
+looks. To that end, the support module is generated with very minimal
+skeletal functions in order to check the appearance of the  GUI by
+running from the Python console. The final lines of the GUI
+module that initiates execution are:
+
+.. sourcecode:: python
+
+		def start_up():
+			unknown_support.main()
+
+		if __name__ == '__main__':
+			unknown_support.main()
+
+
+and the final lines of the support module are:
+
+.. sourcecode:: python
+
+	if __name__ == '__main__':
+    unknown.start_up()
+
+
+which will call "main" in the support module  when the either module
+is executed.
+
+
+When you Generate Support Module from the menu, the Python Console
+will appear, filled with the generated code for the supporting module
+named "<name>_support.py" - <name> is the project name and the root
+name of the tcl file.  This file will contain skeleton functions and
+the boiler plate code needed.  This file will contain the principal
+code for the application.  Ideally this file is generated automatically
+once per application.
+
+
+When you select the toplevel widget and Generate Python GUI from the 
+menu, the Python Console will appear, filled with the generated
+code. You can push the run button and execution will be attempted.
+This will automatically save the generated code into a ".py" file
+where the root name matches that of the tcl file which is also
+automatically saved.  When running from the Python Window, line output
+from the GUI is directed to the lower window of the Python Console.
+
+.. A final word about running in a Python Window is that the ".tcl"
+.. file will be automatically saved as well as the python file. If no
+.. name has been selected for the project, then a file output window will
+.. open and you will be presented with a window with which to specify the
+.. tcl file name, the root of which will be used for the python file
+.. name; it is a project name.  The tcl file can be used as an argument
+.. to PAGE allowing one to later pickup where he left off.the script
+
+Execution of the Python GUI is initiated by either selecting the "Run"
+button at the bottom of the Python GUI or by typing Control-R. It can
+also be run directly by the Python interpreter.
+
+The function "main" is the place to initial things after the GUI 
+is mapped.
+
+Loading generated Python modules into an IDE
+````````````````````````````````````````````
+
+While it is possible to edit PAGE generated files in Python Consoles
+and to execute them from there, the Python Consoles don't really
+constitute a particularly good development environment. One should
+move into a well concieved IDE like IdleX, emacs, Geany or any of a
+host of similar programs.
+
+PAGE can start up an IDE loaded with the Python modules that have been
+saved. This is done by selecting Gen_Python->Load Project into
+IDE. This does not automatically save modules from existing Python
+Consoles.
+
+The IDE is set in the Basics page of the Preferences.  PAGE tries to
+execute a the IDE with two the two file names, <name>.py and
+<name>_support.py, as arguments.  If your favorite IDE can be so
+invoked then it should work.  When running under Linux or OSX, one can
+enter either the full path name of the IDE or a command name in the
+execution path. If you are on Windows, then the full path name takes
+the a form with double backslashes like
+"C:\\\\Python3\\\\Lib\\\\idlelib\\\\idle". I am not an expert in
+Python IDE's, but I have successfully tested this facility with emacs,
+vim, idle, and idlex on Linux; idlex in OSX, and idle in Windows.  For
+instance, on Linux in the IDE command field I enter the full path of
+the IDE. When I want to use IdleX under Linux I enter
+/usr/local/bin/idlex.  I also found that I could enter idlex for
+Linux.
+
+The IDE is invoked from PAGE and PAGE goes into a wait
+state until the IDE exits.
+
+.. _Applications with Multiple Top-Level Windows:
+
+Applications with Multiple Toplevel Windows
+```````````````````````````````````````````
+
+Building such applications is the area of greatest change in version 7
+and sees the greatest simplification.
+
+Often the user will want to build applications which have more than
+one top level window. PAGE now allows the specification of multiple
+toplevel windows so the user defines all required toplevel windows in
+one PAGE project. Further, toplevel windows can be added at any time.
+As part of the version 7 update, a Toplevel entry has been included at
+the top of Toolbar window. When it is selected a new toplevel window
+is added to the GUI. It is offset from the central position so that
+you can readily distinguish it from existing toplevels.  Move it,
+resize it, fill it, change its attributes, and treat it just like any
+other toplevel windows. Save the project, generate the GUI module, and
+the support module just as before.  The generated GUI module will have
+separate class definitions for each toplevel window and will have a
+quite different layout from earlier GUI modules, but that is OK since
+the user should never need to edit it.
+
+
+The generated Python support module is quite different from before and
+is meant to be designer modified.
+The big difference is that the user's application will begin with the
+"main" function in the support module.
+Main contains code for instantiating each class in
+the GUI module, that is for creating each window in the GUI. Since it
+is all there, one call execute setup code prior to creating the GUI as
+well as GUI initiation after creating the GUI but before the
+application use interacts with it.
+
+Again, the code for creating a toplevel window is like the following:
+
+.. sourcecode:: python
+
+    # Creates a toplevel widget.
+    global _top2, _w2
+    _top2 = tk.Toplevel(root)
+    _w2 = unknown.Toplevel2(_top2)
+				
+In practice one may not want all windows to appear when the
+application starts. The appearance may be desired as a response to an
+event in the main window or the application code. Two approaches are:
+
++ Move the toplevel creation code from the main function to the event
+  handling code, perhaps a callback function.
+
++ Follow the creation code in main with a statement which hides the
+  window until it is exposed by the event handler. The statements are
+  of the form.
+
+.. sourcecode:: python
+
+   _top2.withdraw()  # hide toplevel _top2
+
+and
+
+.. sourcecode:: python
+
+   _top2.dyiconify() # show toplevel _top2
+
+Be aware that the toplevel creation code is dfferent for the root
+window than for the other toplevels. That is the nature of Tkinter.
+the line of code in "main"
+
+.. sourcecode:: python
+
+	root = tk.TK()
+
+fires up Tkinter and is required and it creates what I think of as the
+root window and that window corresponds to the first class definition
+in the GUI and that is the first toplevel created in PAGE. Again, it
+is created when Tkinter is initiated.
+A small point is that creation of toplevel windows uses a couple of
+special PAGE variables referring to the window and to the class object,
+_top<n> and _w<n> respectively. The leading '_' means use with caution
+and the 'n' refers to the position in the GUI module.
+
+Remember that the objective of the generation is to provide an
+executable program so you can see immediately how the GUI will appear
+on the screen. You can expect to execute the code and see all
+toplevels. However, in the finished application you may not want all
+top levels to appear at once. So move the creation code to wherever is
+appropriate.
+
+
+.. Name Collision
+.. ~~~~~~~~~~~~~~
+.. 
+.. A downside of the new code generation scheme is that the name space of
+.. support module is shared by all toplevel window code. The Tkinter
+.. variables, the callback functions, and the custom widgets for all the
+.. toplevel windows are all module level names in the support module as
+.. are the global variables introduced in application code. As a result,
+.. name collisions are much more likely and that will require strict
+.. adherence to a global naming convention. Deviation from the naming
+.. convention can lead to errors which are difficult to find.
+.. 
+.. I think that to avoid name collisions for callbacks and custom widgets
+.. naming conversions need to be adopted and followed.
+
+.. There probably are several alternative schemes for reducing the problem with
+.. global variables. I can
+.. think of two  (1) dictionaries for global
+.. variables, and (2) separate modules for global variables.
+.. Let me give an example of each. Assume that you have a function
+.. george  which is associated with toplevel window a and it use the
+.. variable x which is global in the code supporting window a.
+.. Also Assume that your code contains the function fred which also has a
+.. global variable which is global to toplevel b support.
+.. Normally,
+.. you would expect to have code something like:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	def george():
+.. 	    global x
+.. 	    x = 4
+.. 	    y = x
+.. 
+.. 	def fred():
+.. 	    global x
+.. 	    x = square_root(16)
+.. 	    y = 3 * x
+.. 		
+.. You see the collision.
+.. 
+.. To use dictionaries to restrict use of x to code supporting toplevel a
+.. you could code the following:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	a = {}
+.. 	def george():
+.. 	    a['x'] = 4
+.. 	    y = a['x']
+.. 
+.. 	b = {}
+.. 	def fred():
+.. 	    b['x'] = square_root(16)
+.. 	    y = 3 * b['x']
+.. 
+.. To use global modules for the same isolation do the following:
+.. Create the python files a.py and b.py in your project directory Each
+.. containing a comment. Then your code could be:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	import a
+.. 	def george():
+.. 	    a.x = 4
+.. 	    y = a.x
+.. 
+.. 	import b
+.. 	def fred():
+.. 	    b.x = square_root(16)
+.. 	    y = 3 * b.x
+.. 
+.. The module approach has the disadvantage of creating separate modules,
+.. a and b to keep the variable separate but there is no reason that you
+.. can't move george and fred into a.py and b.py respectively. And that
+.. level of modularization can be very desirable.  If george and fred are
+.. callback functions, the code in the support module collapses to:
+.. 
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	import a, b
+.. 	george = a.george
+.. 	fred = b.fred
+.. 
+.. In the above code block, remember that george and fred are just names
+.. referring to functions. The code is merely changing the name so that
+.. function george in module a is accessible as george in the support module. 
+.. 
+
+.. A common question is how to share globa
+.. Name Collision
+.. ~~~~~~~~~~~~~~
+.. 
+.. A downside of the new code generation scheme is that the name space of
+.. support module is shared by all toplevel window code. The Tkinter
+.. variables, the callback functions, and the custom widgets for all the
+.. toplevel windows are all module level names in the support module as
+.. are the global variables introduced in application code. As a result,
+.. name collisions are much more likely and that will require strict
+.. adherence to a global naming convention. Deviation from the naming
+.. convention can lead to errors which are difficult to find.
+.. 
+.. I think that to avoid name collisions for callbacks and custom widgets
+.. naming conversions need to be adopted and followed.
+
+.. There probably are several alternative schemes for reducing the problem with
+.. global variables. I can
+.. think of two  (1) dictionaries for global
+.. variables, and (2) separate modules for global variables.
+.. Let me give an example of each. Assume that you have a function
+.. george  which is associated with toplevel window a and it use the
+.. variable x which is global in the code supporting window a.
+.. Also Assume that your code contains the function fred which also has a
+.. global variable which is global to toplevel b support.
+.. Normally,
+.. you would expect to have code something like:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	def george():
+.. 	    global x
+.. 	    x = 4
+.. 	    y = x
+.. 
+.. 	def fred():
+.. 	    global x
+.. 	    x = square_root(16)
+.. 	    y = 3 * x
+.. 		
+.. You see the collision.
+.. 
+.. To use dictionaries to restrict use of x to code supporting toplevel a
+.. you could code the following:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	a = {}
+.. 	def george():
+.. 	    a['x'] = 4
+.. 	    y = a['x']
+.. 
+.. 	b = {}
+.. 	def fred():
+.. 	    b['x'] = square_root(16)
+.. 	    y = 3 * b['x']
+.. 
+.. To use global modules for the same isolation do the following:
+.. Create the python files a.py and b.py in your project directory Each
+.. containing a comment. Then your code could be:
+.. 
+.. .. sourcecode:: python
+.. 
+.. 	import a
+.. 	def george():
+.. 	    a.x = 4
+.. 	    y = a.x
+.. 
+.. 	import b
+.. 	def fred():
+.. 	    b.x = square_root(16)
+.. 	    y = 3 * b.x
+.. 
+.. The module approach has the disadvantage of creating separate modules,
+.. a and b to keep the variable separate but there is no reason that you
+l variables across module. A
+.. good reference is `How do I share global variables across modules?
+.. <http://effbot.org/pyfaq/how-do-i-share-global-variables-across-modules.htm>`_.
+
+	
+
+
+Busy Cursors
+````````````
+
+This section describes how to change the cursor when in long running
+sections of an application.  Changing to a busy cursor gives some
+feedback to the application user who otherwise may think that the
+application is hung, not doing anything.
+
+One includes the following code at the module level of the support module:
+
+.. sourcecode:: python
+
+    # Code added to allow one to change default cursor to a busy cursor.
+    # Variables added manually to indicate long processes based on code by
+    # Greg Walters in his python programming examples. Adapted from
+    # example in Grayson's book page 158.
+    busyCursor = 'watch'
+    preBusyCursors = None
+
+    def busyStart(newcursor=None):
+        '''We first check to see if a value was passed to newcursor. If
+           not, we default to the busyCursor. Then we walk through the
+           busyWidgets tuple and set the cursor to whatever we want.'''
+        global preBusyCursors
+        if not newcursor:
+            newcursor = busyCursor
+        newPreBusyCursors = {}
+        for component in busyWidgets:
+            newPreBusyCursors[component] = component['cursor']
+            component.configure(cursor=newcursor)
+            component.update_idletasks()
+        preBusyCursors = (newPreBusyCursors, preBusyCursors)
+    
+    def busyEnd():
+        '''In this routine, we basically reset the cursor for the widgets
+           in our busyWidget tuple back to our default cursor.'''
+        global preBusyCursors
+        if not preBusyCursors:
+            return
+        oldPreBusyCursors = preBusyCursors[0]
+        preBusyCursors = preBusyCursors[1]
+        for component in busyWidgets:
+            try:
+                component.configure(cursor=oldPreBusyCursors[component])
+            except KeyError:
+                pass
+            component.update_idletasks()
+    # End of busy cursor code.
+
+and the following lines of code are inserted in "main" in the support module:
+
+.. sourcecode:: python
+
+    global busyWidgets
+    busyWidgets = (_top1, )
+	
+The first line goes in near the top of the function and the assignment
+to busyWidgets is inserted after the root object is created. In one of
+my applications the function "main" looks like:
+
+.. sourcecode:: python
+
+
+
+		def main(*args):
+			'''Main entry point for the application.'''
+			global root
+			root = tk.Tk()
+			root.protocol( 'WM_DELETE_WINDOW' , root.destroy)
+			# Creates a toplevel widget.
+			global _top1, _w1
+			_top1 = root
+			_w1 = busycursor.Toplevel1(_top1)
+			global busyWidgets
+			busyWidgets = (_top1, )
+			root.mainloop()		
+		
+
+The penultimate line above sets the global variable busyWidgets to be a
+tuple containing those widgets in which to display the busy cursor.  
+
+When starting a section of code which is likely to be long running, a
+busy section, insert the following at the start:
+
+.. sourcecode:: python
+   
+   busyStart()
+
+When leaving a busy section make the following the last statement():
+
+.. sourcecode:: python
+   
+   busyEnd()
+
+Obviously, an application could have numerous busy sections and they
+might coincide with particular functions or not.
+
+
+This code can be generalized for usage of any of the Tkinter cursors.
+
+
+.. Final Thought on Usage
+.. ~~~~~~~~~~~~~~~~~~~~~~
+.. 
+.. When one feels confident in using PAGE, he looks at the code patterns
+.. generated by PAGE and modifies the code for effects not anticipated in
+.. PAGE. The philosophy of PAGE is that there is a large and intimidating
+.. body of information needed to start building a GUI. PAGE encapsulates
+.. that information and produces working code. At that point the user can
+.. see the direction the flow is taking and can easily customize the
+.. code at the python level.
+
+.. _images:
+
+Using Images
+````````````
+The use of images with PAGE can be confusing.
+Part of the confusion is the differences between the PAGE
+restrictions on images and that of the generated Python code.
+The good news is that you
+can use images with various widgets such as buttons, menus, and
+TNotebooks. You can select image files by means of the Attribute
+Editor for Buttons, and the Tab Editor for Notebooks. Similarly,
+the Menu Editor will allow you place images in menus. Lastly you can
+specify a title bar icon for your application.
+
+Images are specified by means of the image attribute in the Attribute
+Editor where the ellipses button allows one to select an image
+file. The location of the image file is retained relative to the
+project directory. For that reason, put your GUI images in the project
+directory.
+
+Now for the confusing part.
+Tcl/Tk 8.6 only supports GIF, PGM, or PNG image
+formats. When
+constructing your GUI in PAGE, you are executing PAGE which is a Tcl
+program and, therefore, you have been restricted GIF, PGM, or PNG
+images formats. However, the generated Python code will use tkinter 
+and can support a wide range of image formats including JPG, by using
+PIL, the Python Imaging Library as long as Python package Pillow is
+installed.  For example, the lib_demo example included in the PAGE
+distribution does not use any images in the GUI modules but displays a
+JPEG image when the example is executed. The GUI module specifies a
+Canvas widget to which the support module adds at the tkinter level
+button widgets and places on the button widget a jpeg image using PIL.
+
+While Tcl/Tk 8.6 only supports GIF, PGM, or PNG image formats, there
+is an open source project tkImg which implements the Img package and
+supports a whole host of image formats, including BMP, GIF, ICO, JPEG,
+PCX, PNG, PPM, PS, SGI, SUN, TGA, TIFF, XBM,and XPM. The tkImg package
+can be found at www.sourceforge.net. It supports most OS's including
+Linux, Windows, and OS X. I used the compiled files for unix (Linux),
+Windows, and OSX found on the tkImg site to make the package available
+to PAGE without requiring a user installation of the package.  However
+there is not a compiled version for the Raspberry Pi which uses the
+ARM architecture. I have not been able to compile the package using
+Raspberry Pi.  Fortunately there a package for Raspberry Pi,
+libtk-img, which the user can install using apt-get. I have no
+suggestions for OS X on a M1 chip. **You can use a wide
+range of image formats provided that you are using Linux, Windows, or
+OS X as supported by this hack.** 
+
+When PAGE includes a image, a image object is created and given a name
+based on the file name. For example, the object name based on the file
+"gimp.png" would be "gimp_png". That object is used in widget
+configurations. It is this object creation which recognizes only
+certain image formats.  When you select an image button in the
+Attribute Editor and select an image file, an image object is
+generated and its name is displayed in the image entry field. Though
+the names could conceivably be added manually into the image entry
+fields of the attribute editor, I think that is a bad idea. You must
+make your image choices by means of the ellipsis button next to the
+entry field.  I have also colored the entry field so that you realize
+that changing its contents is a no-no.  The exception is that clearing
+the entry field will remove the image. If you want to verify the image
+filename, selecting the elipsis button will show bring up the file
+selection dialog which displays the current selected image file.
+Also, you can remove an image by invoking the widget context menu with
+Button-3 and then selecting Widget->Remove Image. The Menu Editor and
+other similar editors do allow the removal of an image by clearing the
+image entry field.
+
+The project file and generated Python code reference all image files
+images used.  Those file references are relative to the project
+directory.  It is almost a requirement that the images to be used be
+in the same directory as the one where you build the application or
+even better a subdirectory of that directory. This will facilitate
+moving the project or sharing it. So keep the images and projects
+together. See the :ref:`projdir`.
+
+Also, the image option is coupled with the compound option which
+specifies the relationship of the image position with that of text.
+The Tk default value is "none", which means that if both text and an
+image are specified then the widget will display only the image. I
+have changed the default to left so that the user will see both and
+have a better idea of what is going on. In a nutshell if "none" is
+selected then only the image appears, other wise both image and test
+appears.  For button widgets, I mostly want to select "none" for the
+compound value, but for menus and notebook widgets "left" is my usual
+choice.
+
+It is possible to cut-copy-paste widgets with images provided that the
+images are already in the destination project directory in the same
+relative location. For example, if the widget to be copied contains an
+image in location "./images" then the image must be in "./images" in
+the destination project directory prior to the paste operation. This
+is also true when the cut-copy-paste operation is part of a borrow
+operation.
+
+The iconphoto() method is used to set the titlebar icon of any
+tkinter/toplevel window. But to set any image as the icon of titlebar,
+image should be the object of PhotoImage class. The code below shows
+how this might be done:
+
+.. code:: python
+
+		  def init(top, gui, *args, **kwargs):
+		  global w, top_level, root
+		  w = gui
+		  top_level = top
+		  root = top
+		  photo = tk.PhotoImage(file = "openfolder.gif")
+		  root.iconphoto(False, photo)
+
+Similarly, if you distribute a application using widget images, the
+receiver must keep the application and its widget images in the same
+relative location. Obviously, if you used PIL in building your
+application the receiver will need to install Pillow.
+
+PAGE generated GUI's containing images can be executed from arbitrary
+directories and not just the project directory. If the support module
+uses images they must be in the project directory tree just like
+images for the GUI. In order to use them you will need code similar
+to:
+
+.. code:: python
+
+    location = project._location   # Location of the project folder
+         ...
+    global folderimage
+    photo_location = os.path.join(_location, "./images/icons/document.png")
+    folderimage = tk.PhotoImage(file=photo_location)
+
+where "project" is the name of the PAGE project.	
+
+.. _dynamic_widgets:
+
+Dynamic Widgets
+```````````````
+At times the user wants widgets to display dynamic behavior.  That
+might mean changing color of a widget, the bindings of a widget, the
+visibility of a widget, or the placement of a widget.  This can all be
+done within the support module.
+
+To change an attribute of say Button1, the code would be
+
+.. sourcecode:: python
+
+		_w1.Button1(background='red')
+
+
+To change a binding:
+
+
+.. sourcecode:: python
+
+
+		w.Button.bind(<Button-3>, lambda e: foo(e,x,g)
+
+To hide Button1:
+
+
+.. sourcecode:: python
+
+    b_location = _w1.Button1.place_info()		
+    _w1.Button1.place_forget()
+
+To restore the visibility of Button1:
+
+.. sourcecode:: python
+
+
+		_w1.Button1.place(relx=b_location['relx'], rely=b_location['rely'])
+
+|
+
+Saving of PAGE Files
+====================
+
+PAGE provides several mechanisms for saving the various files
+associated with a PAGE project. The primary files are:
+
++ The tcl file which is the input to the "working" or "design" file of
+  PAGE. It is called the project file. It has the form of "<project name>.tcl".
++ The Python code generated defining the GUI object. It is called the
+  GUI file. The name of this file has the form "<project name>.py".
++ The Python support file containing much of the boiler plate and
+  skeleton functions. Again, the form is "<project name>_support.py".
+
+PAGE implements several mechanisms for saving these files as discussed
+below.
+
+The project name is key to the naming of all the PAGE files related to
+generating a GUI. It is the root name of project file, the tcl
+file. It is fixed when the tcl is saved.  When any of the other file
+files of the project is saved, the name of that file will incorporate
+the project name.
+
+When any of the primary files are saved, existing modules are retained
+as backups. Up to five backup modules are retained to help avoid
+inadvertent lose of application code. The number of backup files can
+selected in the Preferences window.
+
+The primary files may be saved automatically or explicitly as
+described below.  When a file is saved, the previous saved version is
+pushed unto the top of a series of backup files with suffixes ".bak1",
+".bak2", ..., from which an earlier version can be recovered. The
+.bak<n> files are a way to have explicate point of return.
+
+Save Command in the Menu
+````````````````````````
+
+When File->Save or File->Save As is selected then the project (.tcl
+file) file is saved. The previous version of the tcl file is made a
+backup file.  It does not save either the GUI module or the support
+module.
+
+
+Save Button in the Python Console
+`````````````````````````````````
+
+When the Save button in the GUI Console file is selected, the tcl file
+is saved as above if there has been a change to the GUI module. Also,
+the content of the top window of the Python GUI Console is saved if it
+is different from the last version of the code that was saved.  That
+is, if the Python console contains GUI code then the GUI module will
+be saved if it has been modified since the last save of the GUI code
+in the current PAGE invocation. By modified I mean changed via editing
+operations in the text field of the console window or regenerated by PAGE.
+
+Similarly for the case of the support module being in the
+Python Console, if:
+
++ the user had generated a new version of the support module, 
+
++ had the user updated the support module, or
+
++ the user had elected to use the existing support module and had
+  modified it by editing the console window,
+
+then support module will be saved and existing support modules will be
+renamed and retained as backup files. The user will be asked
+explicitly to confirm the save.
+
+.. _reopen_colors:
+
+Loading a Saved Project File
+````````````````````````````
+Users can load an existing project when starting execution including
+the name of the project file in the page command. It is not necessary
+to include the file extension.  The other way is to use  File->"Open as
+Project" command in the main menu.
+
+When a project file is saved, it contains the color scheme of the
+project.  Thus when an existing project is loaded, the colors that
+were originally used are used for modification to the project
+independent of the current PAGE color scheme.
+
+If you wish to change the color scheme of a project you can
+edit the project file removing the lines between the two lines of
+hashes as illustrated below and save the project.
+
+.. sourcecode:: python
+    
+    set desc "-family {DejaVu Sans} -size 12"
+    set vTcl(actual_gui_font_dft_desc) $desc
+    set vTcl(actual_gui_font_dft_name) [font create {*}$desc]
+    set desc "-family {DejaVu Sans} -size 12"
+    set vTcl(actual_gui_font_text_desc) $desc
+    set vTcl(actual_gui_font_text_name) [font create {*}$desc]
+    set desc "-family {DejaVu Sans Mono} -size 12"
+    set vTcl(actual_gui_font_fixed_desc) $desc
+    set vTcl(actual_gui_font_fixed_name) [font create {*}$desc]
+    set desc "-family {Nimbus Sans L} -size 14"
+    set vTcl(actual_gui_font_menu_desc) $desc
+    set vTcl(actual_gui_font_menu_name) [font create {*}$desc]
+    set desc "-family {DejaVu Sans} -size 12"
+    set vTcl(actual_gui_font_tooltip_desc) $desc
+    set vTcl(actual_gui_font_tooltip_name) [font create {*}$desc]
+    set vTcl(actual_gui_font_treeview_desc)  TkDefaultFont
+    set vTcl(actual_gui_font_treeview_name)  TkDefaultFont
+    ####################################################
+    set vTcl(actual_gui_bg) wheat
+    set vTcl(actual_gui_fg) #000000
+    set vTcl(actual_gui_analog) #f4bcb2
+    set vTcl(actual_gui_menu_analog) #ececec
+    set vTcl(actual_gui_menu_bg) #d9d9d9
+    set vTcl(actual_gui_menu_fg) #000000
+    set vTcl(complement_color) #b2c9f4
+    set vTcl(analog_color_p) #eaf4b2
+    set vTcl(analog_color_m) beige
+    set vTcl(tabfg1) black
+    set vTcl(tabfg2) black
+    set vTcl(actual_gui_menu_active_bg)  #ececec
+    set vTcl(actual_gui_menu_active_fg)  #000000
+    ####################################################
+    set vTcl(pr,autoalias) 1
+    set vTcl(pr,relative_placement) 0
+    set vTcl(mode) Absolute
+
+Then set the desired GUI colors in the Preferences window and if
+changed save the preferences and exit. Finally restart page opening
+the project. Of course, if color attributes were modified for
+individual widgets then those colors will not be affected by this hack.
+
+Run Button in the Python Console
+`````````````````````````````````
+
+When the Run button is selected the code in the Python Console
+containing the GUI module will be saved if it differs from the last
+save of the GUI module in the current invocation of PAGE.
+
+Then the GUI module is execute by invoking the Python Interpreter
+against the saved GUI.  Running the Python GUI code will show the
+actual GUI.  Obviously it will fail if there is no support module.
+
+The Run button in a Python Console displaying a support module does
+not cause the code to be saved. This is to prevent PAGE from
+automatically overwriting the support module and losing user written
+code. All that happens is that the GUI module is executed as above. 
+
+Note that every time that the Python code for either the GUI or the
+support module is generated the new module will include a current
+timestamp and so comparing two generations will always differ if
+only in the timestamps. Without the timestamps I could probably reduce
+the number of saves and backup files, but I think the timestamps are
+very valuable.
+
+
+
+.. Automatic Save at PAGE Exit 
+.. ```````````````````````````
+
+.. When PAGE is closed by either Quit or Control-Q, the save action is
+.. the same as for the File->Save. Again, only the project file is saved,
+.. neither the GUI module or the support module are not affected or
+.. saved.
+
+.. _auto_save:
+   
+Autosave
+`````````
+
+PAGE periodically saves the project file that you are building; this
+is called auto-saving. Auto-saving helps protect users from losing
+more than a limited amount of work if PAGE or the system crashes, or if
+the user quits without saving. By default, autosaves happen around
+every 10 seconds. The save-files so generated have names based on the
+project name; If the project file is named "<project>.tcl", then the
+save-file will have the name "#<project>.tcl#" and will be located in
+the same directory as the project file. 
+
+Whenever a project file is to be loaded, PAGE will check if there is a
+corresponding save-file which is newer than the project file. If so,
+the user is asked which of the two files he wishes loaded.
+The autosave file is erased and the autosave interval is reset
+whenever the project file is either loaded or saved.
+
+This even works if PAGE terminated without a project file having been
+saved; i.e., the user may have started PAGE with the command "page
+somefile" but never did a save. In that case there will be no project
+file named "somefile.tcl" but there may an autosave file named
+"#somefile.tcl#". In this case if the user initiates PAGE with "page
+somefile" the file "#somefile.tcl# will be loaded and treated as
+"somefile.tcl".
+
+One requirement of autosaving is that it requires a project filename
+in order to work. If the user starts PAGE without providing a filename
+argument and builds a GUI in the toplevel window that automatically
+opens, then the save-file is named "autosave.tcl".  In order to
+recover in that case, the user opens "autosave.tcl". The filename
+"autosave.tcl" should be treated as a name reserved for the autosave
+function. On the other hand if the user had specified a project file
+in the invocation of PAGE, then the autosave function would be more
+transparent. 
+
+When the user does a "Save" or "Save as" operation, he provides a
+project name and next autosave will use that project name. A save can
+also occurs when Python code is generated. Save actions will remove
+any "autosave.tcl" file; this means that the user has only one chance
+to recover and should do an immediate save. Initiating execution with
+a project name or doing an Open operation, of course, provides the
+filename needed for auto-saving.
+
+Another point to be noted is that save-files may be left around to be
+removed manually. A new entry in File > "Remove Autosave Files"
+removes all autosave files in the current directory.
+
+
+
+

@@ -1,0 +1,16 @@
+load_cal : date.year = 2022
+load_cal : date.month = 7
+load_cal : w.today.year = 2022
+load_cal : w.today.month = 7
+load_cal : date.year = 2022
+load_cal : date.month = 8
+load_cal : w.today.year = 2022
+load_cal : w.today.month = 7
+load_cal : date.year = 2022
+load_cal : date.month = 9
+load_cal : w.today.year = 2022
+load_cal : w.today.month = 7
+load_cal : date.year = 2022
+load_cal : date.month = 8
+load_cal : w.today.year = 2022
+load_cal : w.today.month = 7

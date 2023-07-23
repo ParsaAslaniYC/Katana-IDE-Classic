@@ -1,0 +1,156 @@
+								   
+Module Structure
+================
+
+
+PAGE generates two modules, The GUI module, and the Support
+Module. The first contains all of the Python code necessary to plop
+the GUI window onto the computer screen. In my vision of the PAGE
+word, the GUI module is not to be edited. It contains all of the
+required linkage to the Support module.  It is generally the main
+module of the application.
+
+
+The Support module is generated in skeletal form and is the framework
+upon which the application is built. It is where the user written code
+resides.  As such it is infrequently generated or replaced by PAGE. In
+fact, the separation is the secret of rework; it allows changes
+to the content and appearance of the GUI window while preserving the 
+user's code. 
+
+
+GUI Module
+~~~~~~~~~~
+
+The main feature of the GUI module is the class definition, which
+defines a GUI window.  It defines the top level window and all of the
+contained widgets.  Note that it refers to all callback functions as
+functions in the support module and that Tk variables such as
+textvariables are referred to Tk variables in the support module.
+
+The GUI module contains two stylized function for instantiating the
+window class. They are:
+
+.. sourcecode:: python
+
+    def vp_start_gui():
+   	    '''Starting point when module is the main routine.'''
+    	global val, w, root
+    	root = Tk()
+    	top = New_Toplevel_1 (root)
+    	unknown_support.init(root, top)
+    	root.mainloop()
+
+which is the entry point when starting the routine as the main routine
+of the application. The main thing about this is that it initializes
+Tk and establishes the Tkinter mainloop.  It is called when this
+module is executed as the main module. Note that the init function in
+the support module is passed  pointer to the GUI window class.
+
+
+and
+
+
+.. sourcecode:: python
+
+   def create_New_Toplevel_1(root, *args, **kwargs):
+   	    '''Starting point when module is imported by another program.'''
+	    global w, w_win, rt
+    	rt = root
+    	w = Toplevel (root)
+    	top = New_Toplevel_1 (w)
+    	unknown_support.init(w, top, *args, **kwargs)
+    	return (w, top)
+
+which is the entry point when ate GUI window is invoked from code
+within the running application.  For instance, A secondary GUI such as
+a progress bar is desired for some action triggered in the main
+GUI. Notice that it does not call Tk() nor start a mainloop; you only
+want one of those.  A big point is that the init function is passed a
+variable argument list in the name of flexibility.  It is also passed
+a pointer to the GUI window
+
+
+Support Module
+~~~~~~~~~~~~~~
+
+This module is home of the hand coded portion of the application.
+Obviously, PAGE can only prepare a framework for the application. What
+PAGE knows about are, (1) the linkage between the GUI module and the
+support module, (2) the callback functions to be located in the
+Support module, and (3) the Tk variables which are to be manipulated
+in the support module.
+
+For linkage between the modules is mainly the init function.
+
+.. sourcecode:: python
+
+def init(top, gui, *args, **kwargs):
+    global w, top_level, root
+    w = gui
+    top_level = top
+    root = top
+
+Here PAGE merely generates the bare minimum. It sets global variables
+which refer to the root of the GUI window "root = top" and w which
+points to the GUI window.  The latter allow the user to change
+configuration of the GUI window and of widget contained in the
+window. For instance if there is a button (Button1) in the GUI
+window, the color may be changed anywhere in the support module simply
+with the following code:
+
+
+.. sourcecode:: python
+
+   w.Button1.configure(color='red')
+
+Also, if there is hierarchy of modules or routines flowing from the
+support module, then the reference to the GUI window can be passed
+along and manipulated.
+
+The generated code for the callback functions is even simpler:
+
+ 
+.. sourcecode:: python
+
+    def callback():
+    	print('unknown_support.callback')
+    	sys.stdout.flush()
+
+
+
+Code generated for the Tk variable kkkk looks like:
+
+
+.. sourcecode:: python
+
+    def set_Tk_var():
+       # These are Tk variables used passed to Tkinter and must be
+       # defined before the widgets using them are created.
+       global kkkk
+       kkkk = StringVar()
+
+
+The code generated as above is so generated so that the GUI module and
+the support module will be an executable pair.  That is, you can
+execute the GUI module and see what it will look like even though you
+have put in no additional application code. If the GUI invokes a
+callback, say by a button select, the program will tell you that it
+was invoked. No you have a leg up, go program.
+
+
+Now lets say you go write a substantial body of application code, and
+discover that you need an additional widget in the GUI module; what to
+do?
+
+First invoke PAGE with the project name, add the widget with all its
+callbacks and Tk variables. Then generate Python code for the GUI
+module just like before.  You sure do not want to rebuild the support
+module anew and erase all of your hand code.  So when you tell PAGE to
+generate your support module, it gives you the option of updating the
+existing support module. If selected, PAGE will merely add skeletons
+for the new callbacks and add the new Tk variables.  In addition, it
+will backup the previous version of the modules in case of failure or
+PAGE bugs. etc..  PAGE will keep backups five deep.
+
+

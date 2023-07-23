@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkFontSelectionDialog" id="fontselectiondialog1">
+    <property name="border_width">5</property>
+    <property name="type_hint">normal</property>
+    <child internal-child="font_selection">
+      <object class="GtkFontSelection" id="fontsel-font_selection1">
+        <property name="visible">True</property>
+        <property name="border_width">5</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">fontsel-cancel_button1</action-widget>
+      <action-widget response="0">fontsel-apply_button1</action-widget>
+      <action-widget response="0">fontsel-ok_button1</action-widget>
+    </action-widgets>
+    <child internal-child="cancel_button">
+      <object class="GtkButton" id="fontsel-cancel_button1">
+        <property name="label" translatable="yes">OK</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="can_default">True</property>
+        <property name="receives_default">True</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">fontsel-cancel_button1</action-widget>
+      <action-widget response="0">fontsel-apply_button1</action-widget>
+      <action-widget response="0">fontsel-ok_button1</action-widget>
+    </action-widgets>
+    <child internal-child="apply_button">
+      <object class="GtkButton" id="fontsel-apply_button1">
+        <property name="label" translatable="yes">Apply</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="can_default">True</property>
+        <property name="receives_default">True</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">fontsel-cancel_button1</action-widget>
+      <action-widget response="0">fontsel-apply_button1</action-widget>
+      <action-widget response="0">fontsel-ok_button1</action-widget>
+    </action-widgets>
+    <child internal-child="ok_button">
+      <object class="GtkButton" id="fontsel-ok_button1">
+        <property name="label" translatable="yes">Cancel</property>
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="can_default">True</property>
+        <property name="receives_default">True</property>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">fontsel-cancel_button1</action-widget>
+      <action-widget response="0">fontsel-apply_button1</action-widget>
+      <action-widget response="0">fontsel-ok_button1</action-widget>
+    </action-widgets>
+  </object>
+</interface>
