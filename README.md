@@ -72,6 +72,6 @@ __ Console with Support of 3 Command Style (1.Windows, 2.Bash, 3.csh)
 
 ____________________
 
-# Coming Soon Features
+
 
 
